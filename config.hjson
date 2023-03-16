@@ -1,0 +1,20 @@
+
+{
+    // levels: CRITICAL=50,ERROR=40,WARNING=30,INFO=20,DEBUG=10,NOTSET=0 
+    LOG_LEVEL : 10
+
+    // na jake ip a portu spustit
+    HOST : "localhost"
+    PORT : 5020
+
+    //vyber formatu komprese
+    //"png" nebo "jpg"
+    IMAGE_COMPRESSION : "jpg"
+    JPG_QUALITY : 90
+
+    // maximalni rozmery snimku pred posilanim na web
+    IMAGE_MAX_W : 1600
+    IMAGE_MAX_H : 800
+
+
+}

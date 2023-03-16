@@ -1,0 +1,145 @@
+/**
+ * alertifyjs 1.4.1 http://alertifyjs.com
+ * AlertifyJS is a javascript framework for developing pretty browser dialogs and notifications.
+ * Copyright 2015 Mohammad Younes <Mohammad@alertifyjs.com> (http://alertifyjs.com) 
+ * Licensed under MIT <http://opensource.org/licenses/mit-license.php>*/
+.alertify .ajs-dialog {
+  max-width: 50%;
+  min-height: 137px;
+  background-color: #F4F4F4;
+  border: 1px solid #DDD;
+  box-shadow: none;
+  border-radius: 5px;
+}
+.alertify .ajs-header {
+  padding: 1.5rem 2rem;
+  border-bottom: none;
+  border-radius: 5px 5px 0 0;
+  color: #555;
+  background-color: #fff;
+  font-size: 1.6em;
+  font-weight: 700;
+}
+.alertify .ajs-body {
+  color: #555;
+}
+.alertify .ajs-body .ajs-content .ajs-input {
+  width: 100%;
+  margin: 0;
+  padding: .65em 1em;
+  font-size: 1em;
+  background-color: #FFF;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  outline: 0;
+  color: rgba(0, 0, 0, 0.7);
+  border-radius: .3125em;
+  transition: background-color 0.3s ease-out, box-shadow 0.2s ease, border-color 0.2s ease;
+  box-sizing: border-box;
+}
+.alertify .ajs-body .ajs-content .ajs-input:active {
+  border-color: rgba(0, 0, 0, 0.3);
+  background-color: #FAFAFA;
+}
+.alertify .ajs-body .ajs-content .ajs-input:focus {
+  border-color: rgba(0, 0, 0, 0.2);
+  color: rgba(0, 0, 0, 0.85);
+}
+.alertify.ajs-resizable .ajs-content,
+.alertify.ajs-maximized:not(.ajs-resizable) .ajs-content {
+  top: 64px;
+  bottom: 74px;
+}
+.alertify .ajs-footer {
+  background-color: #fff;
+  padding: 1rem 2rem;
+  border-top: none;
+  border-radius: 0 0 5px 5px;
+}
+.alertify-notifier .ajs-message {
+  background: rgba(255, 255, 255, 0.95);
+  color: #000;
+  text-align: center;
+  border: 0;
+  border-radius: 2px;
+  box-shadow: 0;
+}
+.alertify-notifier .ajs-message.ajs-success {
+  color: #fff;
+  background: #21ba45;
+  text-shadow: 0px 0px 1px rgba(0, 0, 0, 0.5);
+}
+.alertify-notifier .ajs-message.ajs-error {
+  color: #fff;
+  background: #DB2828;
+  text-shadow: 0px 0px 1px rgba(0, 0, 0, 0.5);
+}
+.alertify-notifier .ajs-message.ajs-warning {
+  background: #FBBD08;
+  border-color: #999;
+}
+.alertify .ajs-footer .ajs-buttons .ajs-button{
+  cursor: pointer;
+  display: inline-block;
+  min-height: 1em;
+  outline: none;
+  border: none;
+  vertical-align: baseline;
+  background: #e0e1e2 none;
+  color: rgba(0, 0, 0, 0.6);
+  font-family: 'Lato', 'Helvetica Neue', Arial, Helvetica, sans-serif;
+  margin: 0em 0.25em 0em 0em;
+  padding: 0.78571429em 1.5em 0.78571429em;
+  text-transform: none;
+  text-shadow: none;
+  font-weight: bold;
+  line-height: 1em;
+  font-style: normal;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 0.28571429rem;
+  box-shadow: 0px 0px 0px 1px transparent inset, 0px 0em 0px 0px rgba(34, 36, 38, 0.15) inset;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-transition: opacity 0.1s ease, background-color 0.1s ease, color 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
+  transition: opacity 0.1s ease, background-color 0.1s ease, color 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
+  will-change: '';
+  -webkit-tap-highlight-color: transparent;
+}
+.alertify .ajs-footer .ajs-buttons .ajs-button:hover {
+  background-color: #cacbcd;
+  background-image: none;
+  box-shadow: 0px 0px 0px 1px transparent inset, 0px 0em 0px 0px rgba(34, 36, 38, 0.15) inset;
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.alertify .ajs-footer .ajs-buttons .ajs-button:hover .icon {
+  opacity: 0.85;
+}
+
+/*--------------
+      Focus
+---------------*/
+
+.alertify .ajs-footer .ajs-buttons .ajs-button:focus {
+  background-color: #cacbcd;
+  color: rgba(0, 0, 0, 0.8);
+  background-image: '' !important;
+  box-shadow: '' !important;
+}
+
+.alertify .ajs-footer .ajs-buttons .ajs-button:focus .icon {
+  opacity: 0.85;
+}
+
+/*--------------
+      Down
+---------------*/
+
+.alertify .ajs-footer .ajs-buttons .ajs-button:active{
+  background-color: #babbbc;
+  background-image: '';
+  color: rgba(0, 0, 0, 0.9);
+  box-shadow: 0px 0px 0px 1px transparent inset, none;
+}

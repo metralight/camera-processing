@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>DispensingMachine</title>
+
+	<link rel="stylesheet" href="./css/fonts-import.css">
+	<link rel="stylesheet" href="./css/semantic.css">
+	<link rel="stylesheet" href="./css/alertify.css">
+	<link rel="stylesheet" href="./css/alertify.semantic.css">
+	<link rel="stylesheet" href="./css/styles.css">
+	
+	<style>
+		#forceCss input:invalid {
+			background-color: rgb(255, 224, 224);
+			color: rgb(255, 108, 108);
+		}
+
+		#forceCss .ui[class*="very compact"].table th{
+			padding-top: 0.3em;
+			padding-bottom: 0.3em;
+		}
+
+		th.actions,
+		td.actions{
+			white-space: nowrap;
+			width: 20px;
+		}
+
+        #forceCss .move-control-panel {
+            width: 100%;
+        }
+        #forceCss .move-control-panel td{
+            padding : 5px;
+        }
+        #forceCss .move-control-panel td button {
+            width: 100%;
+            min-height: 60px;
+        }
+	</style>
+
+</head>
+<body id="forceCss">
+	<div id="root" style="padding: 20px">
+		
+	</div>
+   
+	<!-- nebuildovane skripty script tag -->
+	<script src="./js/jquery.min.js"></script>
+	<script src="./js/semantic.js"></script>
+	<script src="./js/alertify.min.js"></script>
+	<script src="./js/luxon.min.js"></script>
+	<script src="./dispensingMachine.js"></script>
+
+	
+
+</body>
+</html>

@@ -1,0 +1,29 @@
+{
+    // driver
+    CTI : [
+        "C:\\Program Files\\Common Files\\OMRON_SENTECH\\GenTL\\v1_5\\StGenTL_MD_VC141_v1_5_x64.cti",
+        "C:\\Program Files\\Basler\\pylon 5\\Runtime\\x64\\ProducerU3V.cti",
+        "C:\\Program Files\\FLIR Systems\\Spinnaker\\cti64\\vs2015\\FLIR_GenTL_v140.cti"
+    ]
+
+    // UNUSED - nyni vyber kamery combo boxem
+    // identifikace kamery fixne
+    IDENTIFIER : "model" //"model" or "serial_number"
+    IDENTIFIER_VALUE : "acA1920-155um" //sentech="STC_CMC4MPOE", basler="acA1920-155um", point grey="Grasshopper3 GS3-PGE-23S6C"
+
+    // maixmalni delka cteni jednoho framu
+    FRAME_READ_TIMEOUT : 3
+
+    // preddefinovana identifikace kamery
+    CAMERA_CONFIG_NODES : {
+        AcquisitionFrameRate : 10
+        AcquisitionFrameRateEnable : true
+        ExposureMode : "Timed" //0=Off, 1="timed"
+        ExposureTime : 4000 // microseconds
+    }
+
+    EXPOSED_NODES : [
+        "ExposureTime"
+    ]
+
+}
