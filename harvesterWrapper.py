@@ -66,6 +66,10 @@ class HarvesterWrapper(AsyncIOEventEmitter):
                 return np.copy(self.image)
 
     def startGrab(self, deviceInfo):
+        """
+            V threadu nastartuje vycitani obrazu z kamery
+            Vrati seznam konfigurovatelnych nodes
+        """
         self.grabStoppedEvent.clear()
 
         try:
@@ -73,7 +77,7 @@ class HarvesterWrapper(AsyncIOEventEmitter):
         except Exception as e:
             raise Exception("Can not access camera defined by identifier")
 
-        # set config
+        # # set config
         for prop in self.config["CAMERA_CONFIG_NODES"]:
             node = None
             try:
@@ -82,10 +86,28 @@ class HarvesterWrapper(AsyncIOEventEmitter):
                 logging.warning(f"Can not get node: {prop}", exc_info=True)
             if node is not None:
                 node.value = self.config["CAMERA_CONFIG_NODES"][prop]
+        
+        # ulozit konfigurovatelne nodes
+        exposedNodes = []
+        for prop in self.config["CAMERA_EXPOSED_NODES"]:
+            node = None
+            try:
+                node = self.ia.remote_device.node_map.get_node(prop)
+            except Exception as err:
+                logging.warning(f"Can not get node: {prop}", exc_info=True)
+            if node is not None:
+                exposedNodes.append(node)
+        
+        # puvodne reformat nodes az v app, ale nefungovalo
+        # nejspis zamrlo kvuli asynchronne spustenemu videu
+        exposedNodes = self._harvestNodesToPython(exposedNodes)
 
         self.grabThread = threading.Thread(target=self.grabbingWork)
         self.grabThread.setDaemon(True)
         self.grabThread.start()
+
+        return exposedNodes
+
 
     def stopGrab(self):
         self.grabStoppedEvent.set()
@@ -130,8 +152,8 @@ class HarvesterWrapper(AsyncIOEventEmitter):
                                 # Swap every R and B:
                                 content = content[:, :, ::-1]
 
-                            elif data_format=="BayerBR8":
-                                content = cv2.cvtColor(content, cv2.COLOR_BayerBR2RGB)
+                            elif data_format=="BayerBG8":
+                                content = cv2.cvtColor(content, cv2.COLOR_BAYER_BG2RGB)
                             elif data_format=="BayerRG8":
                                 content = cv2.cvtColor(content, cv2.COLOR_BayerRG2RGB)
                             elif data_format=="BayerGB8":
@@ -155,6 +177,35 @@ class HarvesterWrapper(AsyncIOEventEmitter):
 
         self.ia.stop()
 
+    def _harvestNodesToPython(self, nodes):
+        resultArr = []
+        for node in nodes:
+            obj = {}
+            obj["name"] = node.node.name
+            obj["display_name"] = node.node.display_name
+            obj["tooltip"] = node.node.tooltip
+            obj["value"] = node.value
+
+            # select pokud ma entries
+            if hasattr(node, "entries"):
+                obj["type"] = "select"
+                obj["options"] = []
+                for entry in node.entries:
+                    obj["options"].append({
+                        "display_name" : entry.symbolic,
+                        "value" : entry.value
+                    })
+            # jinak cislo
+            else:
+                obj["type"] = "number"
+                obj["min"] = node.min
+                obj["max"] = node.max
+                obj["unit"] = node.unit
+
+            resultArr.append(obj)
+
+        return resultArr
+
 if __name__ == '__main__':
     rootLogger = logging.getLogger()
     rootLogger.setLevel(10)
@@ -167,9 +218,7 @@ if __name__ == '__main__':
         cv2.waitKey(1)
 
     cam.on("image", show)
-    confDict = {}
-    confDict[config["IDENTIFIER"]] = config["IDENTIFIER_VALUE"]
-    cam.startGrab(confDict)
+    cam.startGrab({"model" : "STC_CMC4MPOE"})
     time.sleep(5)
     cam.stopGrab()
     

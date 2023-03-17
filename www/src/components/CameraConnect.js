@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react"
 
-export default function TopMenu(props){
+export default function CameraConnect(props){
     const {devices, onStartCaputure, working, capturing, onStopCapture} = props
     const [selectedDevice, setSelectedDevice] = useState(null)
     const [prevDevices, setPrevDevices] = useState(null)
@@ -43,12 +43,31 @@ export default function TopMenu(props){
     function onChangeDevice(event){
         const selectedModel = event.currentTarget.value
         const device = devices.find(val => val.model===selectedModel)
-        setSelectedDevice(device)
+        setSelectedDevice({"model" : device.model, "serial_number" : device.serial_number})
     }
-
     
-    return <div className="ui stackable attached inverted menu">
-        <div className="item">
+    // return <div className="ui stackable top attached inverted menu">
+    //     <div className="item">
+    //         <select
+    //             className="ui dropdown"
+    //             value={selectedDevice ? selectedDevice.model : ""}
+    //             onChange={onChangeDevice} 
+    //             ref={dropdownEl}
+    //         >
+    //             {(devices ? devices : []).map((dev) => {
+    //                 return <option value={dev.model} key={dev.model}>
+    //                     {dev.model}
+    //                 </option>
+    //             })}
+    //         </select>
+    //         &nbsp;
+    //         <button className="ui button" disabled={working} onClick={onStartStopClick}>
+    //             <i className={(capturing ? "stop icon" : "play icon")} />
+    //             {(capturing ? "Stop capture" : "Start capture")}
+    //         </button>
+    //     </div>
+    // </div>
+    return <div className="ui form">
             <select
                 className="ui dropdown"
                 value={selectedDevice ? selectedDevice.model : ""}
@@ -67,5 +86,4 @@ export default function TopMenu(props){
                 {(capturing ? "Stop capture" : "Start capture")}
             </button>
         </div>
-    </div>
 }

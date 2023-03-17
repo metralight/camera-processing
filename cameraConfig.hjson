@@ -6,15 +6,11 @@
         "C:\\Program Files\\FLIR Systems\\Spinnaker\\cti64\\vs2015\\FLIR_GenTL_v140.cti"
     ]
 
-    // UNUSED - nyni vyber kamery combo boxem
-    // identifikace kamery fixne
-    IDENTIFIER : "model" //"model" or "serial_number"
-    IDENTIFIER_VALUE : "acA1920-155um" //sentech="STC_CMC4MPOE", basler="acA1920-155um", point grey="Grasshopper3 GS3-PGE-23S6C"
-
-    // maixmalni delka cteni jednoho framu
+    // maximalni delka cteni jednoho framu
     FRAME_READ_TIMEOUT : 3
 
-    // preddefinovana identifikace kamery
+    // preddefinovane hodnoty, ktere nastavit kamere
+    // nodes ktere kamera nema, jsou ignorovany
     CAMERA_CONFIG_NODES : {
         AcquisitionFrameRate : 10
         AcquisitionFrameRateEnable : true
@@ -22,8 +18,13 @@
         ExposureTime : 4000 // microseconds
     }
 
-    EXPOSED_NODES : [
-        "ExposureTime"
+    // nodes ktere budou zobrazeny uzivateli k nastaveni
+    // pokud jsou k dispozici
+    CAMERA_EXPOSED_NODES : [
+        "ExposureAuto",
+        "ExposureTime",
+        "GainAuto",
+        "Gain",
     ]
 
 }

@@ -2,9 +2,10 @@ import React, { useEffect, useRef, useState } from "react"
 import Loader from "./Loader"
 import { io } from "socket.io-client"
 import { startCapture, stopCapture, getDevices, getConfig } from "../apiFunctions"
-import Overview from "./Overview"
+import Video from "./Video"
+import VideoControls from "./VideoControls"
 import ErrorBoundary from "./ErrorBoundary"
-import TopMenu from "./TopMenu"
+import CameraConnect from "./CameraConnect"
 
 
 const socket = io();
@@ -15,6 +16,7 @@ socket.on("SOCKET_IO_ERROR", (e) => {
 export default function App(props){
     const [config, setConfig] = useState(null)
     const [devices, setDevices] = useState(null)
+    const [controlNodes, setControlNodes] = useState(null)
     const [working, setWorking] = useState(null)
     const [capturing, setCapturing] = useState(null)
 
@@ -37,14 +39,16 @@ export default function App(props){
     
     function onStartCaputure(device){
         setWorking(true)
-        startCapture(socket, device).then(()=>{
+        startCapture(socket, device).then((controlNodes)=>{
             setWorking(false)
             setCapturing(true)
+            setControlNodes(controlNodes)
         }).catch((err) => {
             alertify.error("Can not start capture: " + err)
             console.log(err)
             setWorking(false)
             setCapturing(false)
+            setControlNodes(null)
         })
     }
 
@@ -53,11 +57,13 @@ export default function App(props){
         stopCapture(socket).then(()=>{
             setWorking(false)
             setCapturing(false)
+            setControlNodes(null)
         }).catch((err) => {
             alertify.error("Can not stop capture: " + err)
             console.log(err)
             setWorking(false)
             setCapturing(false)
+            setControlNodes(null)
         })
     }
 
@@ -66,24 +72,38 @@ export default function App(props){
     }
 
     return <div>
-        <ErrorBoundary>
-            <TopMenu 
-                devices={devices}
-                onStartCaputure={onStartCaputure}
-                working={working}
-                capturing={capturing}
-                onStopCapture={onStopCaputure}
-            />
-        </ErrorBoundary>
+       
         <div className="ui grid">
-            <div className="sixteen wide column">
+            <div className="four wide column">
+                <div className="ui message">
+                    <ErrorBoundary>
+                        <CameraConnect 
+                            devices={devices}
+                            onStartCaputure={onStartCaputure}
+                            working={working}
+                            capturing={capturing}
+                            onStopCapture={onStopCaputure}
+                        />
+                    </ErrorBoundary>
+                    <ErrorBoundary>
+                        {
+                            (capturing && controlNodes) ? 
+                                <VideoControls nodes={controlNodes} config={config} io={socket} />
+                                :
+                                null
+                        }
+                    </ErrorBoundary>
+                </div>
+            </div>
+
+            <div className="twelve wide column">
                 <ErrorBoundary>
                     {
                         capturing ? 
-                            <Overview config={config} io={socket} />
+                            <Video config={config} io={socket} />
                             :
                             null
-                    }                    
+                    }
                 </ErrorBoundary>
             </div>
         </div>

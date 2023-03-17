@@ -53,6 +53,7 @@ class App():
     def _formatException(self, e):
         return self.EXCEPTIONS_FUNC(e)
 
+    
 
     def getConfig(self, unused):
         try:
@@ -76,10 +77,10 @@ class App():
         
     def startCapture(self, device):
         try:
-            self.camera.startGrab(device)
+            nodes = self.camera.startGrab(device)
             return {
                 "result" : True,
-                "data" : None
+                "data" : nodes
             }
         except Exception as e:
             logging.exception(e)

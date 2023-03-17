@@ -26,7 +26,7 @@ module.exports = {
 	output: {
 		path: path.resolve(__dirname, "../public"), //kam generovat vystup kompilace
 		publicPath: "./", //slozka kam generovat public assets
-		filename: "dispensingMachine.js"
+		filename: "cameraProcessing.js"
 	},
 	performance : {
 		maxEntrypointSize: 512000,
