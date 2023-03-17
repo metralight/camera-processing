@@ -24,6 +24,7 @@ htmlcov/
 *,cover
 
 logs/*
+!logs/.gitkeep
 www/src/node_modules/*
 data/*
 deploy/*
