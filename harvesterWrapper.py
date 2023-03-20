@@ -65,64 +65,60 @@ class HarvesterWrapper(AsyncIOEventEmitter):
             else:
                 return np.copy(self.image)
 
-    def updateNode(self, nodeDict, value):
-        try:
-            node = self.ia.remote_device.node_map.get_node(nodeDict["name"])
-            node.value = value
-        except Exception as e:
-            logging.exception(f"Can not update node value: {e}")
+    def updateNode(self, nodeName, value):
+        self._setNode(nodeName, value, throw=True)
 
         # vratit vsechny nodes updatovane
         return self.getUserConfigNodes()
     
     def getUserConfigNodes(self):
         # ulozit konfigurovatelne nodes
-        exposedNodes = []
-        for prop in self.config["CAMERA_EXPOSED_NODES"]:
+        userNodes = []
+        for prop in self.config["USER_NODES"]:
             node = None
             try:
                 node = self.ia.remote_device.node_map.get_node(prop)
             except Exception as err:
                 logging.warning(f"Can not get node: {prop}", exc_info=True)
             if node is not None:
-                exposedNodes.append(node)
+                userNodes.append(node)
         
         # puvodne reformat nodes az v app, ale nefungovalo
         # nejspis zamrlo kvuli asynchronne spustenemu videu
-        exposedNodes = self._harvestNodesToPython(exposedNodes)
+        userNodes = self._harvestNodesToPython(userNodes)
 
-        return exposedNodes
+        return userNodes
     
-    def startGrab(self, deviceInfo):
+    def startGrab(self, deviceInfo, userConfig=None):
         """
             V threadu nastartuje vycitani obrazu z kamery
             Vrati seznam konfigurovatelnych nodes
         """
+        logging.info(f"StartGrab deviceInfo={deviceInfo} userConfig={userConfig}")
+        
         self.grabStoppedEvent.clear()
-
         try:
             self.ia = self.harvester.create(deviceInfo)
         except Exception as e:
             raise Exception("Can not access camera defined by identifier")
 
-        # # set config
-        for prop in self.config["CAMERA_CONFIG_NODES"]:
-            node = None
-            try:
-                node = self.ia.remote_device.node_map.get_node(prop)
-            except Exception as err:
-                logging.warning(f"Can not get node: {prop}", exc_info=True)
-            if node is not None:
-                node.value = self.config["CAMERA_CONFIG_NODES"][prop]
+        # set default config
+        for prop in self.config["DEFAULT_CONFIG"]:
+            self._setNode(prop, self.config["DEFAULT_CONFIG"][prop], throw=False)
         
-        # ulozit konfigurovatelne nodes
-        exposedNodes = self.getUserConfigNodes()
+        # pokud je userConfig tak také nastavit
+        if userConfig is not None:
+            for prop in userConfig:
+                self._setNode(prop, userConfig[prop], throw=False)
 
-        self.grabThread = threading.Thread(target=self.grabbingWork)
+        # ulozit konfigurovatelne nodes
+        userNodes = self.getUserConfigNodes()
+
+        self.grabThread = threading.Thread(target=self._grabbingWork)
         self.grabThread.setDaemon(True)
         self.grabThread.start()
 
-        return exposedNodes
+        return userNodes
 
 
     def stopGrab(self):
@@ -134,7 +130,7 @@ class HarvesterWrapper(AsyncIOEventEmitter):
 
         self.image = None
 
-    def grabbingWork(self):
+    def _grabbingWork(self):
         self.ia.start()
         while not self.grabStoppedEvent.isSet():
             try:
@@ -221,6 +217,25 @@ class HarvesterWrapper(AsyncIOEventEmitter):
             resultArr.append(obj)
 
         return resultArr
+    
+    def _setNode(self, propName, value, throw=False):
+        node = None
+        try:
+            node = self.ia.remote_device.node_map.get_node(propName)
+        except Exception as err:
+            msg = f"Can not get node: {propName}"
+            logging.warning(msg, exc_info=True)
+            if throw:
+                raise Exception(msg)
+            
+        if node is not None:
+            try:
+                node.value = value
+            except:
+                msg = f"Can not set value: {value} to node: {propName}"
+                logging.warning(msg, exc_info=True)
+                if throw:
+                    raise Exception(msg)
 
 if __name__ == '__main__':
     rootLogger = logging.getLogger()

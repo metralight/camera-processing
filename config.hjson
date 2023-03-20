@@ -15,6 +15,4 @@
     // maximalni rozmery snimku pred posilanim na web
     IMAGE_MAX_W : 1600
     IMAGE_MAX_H : 800
-
-
 }

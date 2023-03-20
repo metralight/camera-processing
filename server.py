@@ -9,8 +9,12 @@ from logs import ConfigureLogging
 from app import App
 from harvesterWrapper import HarvesterWrapper
 
-config = hjson.load(open("config.hjson", "r"))
-configCamera = hjson.load(open("cameraConfig.hjson", "r"))
+config = None
+configCamera = None
+with open("config.hjson", "r") as f:
+    config = hjson.load(f)
+with open("cameraConfig.hjson", "r") as f:
+    configCamera = hjson.load(f)
 
 ConfigureLogging(config["LOG_LEVEL"])
 

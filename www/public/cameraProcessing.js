@@ -718,7 +718,7 @@ function VideoControlNode(props) {
     } // }
 
 
-    onNodeChange(node, value);
+    onNodeChange(node, parseFloat(value));
   }
 
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
@@ -746,7 +746,9 @@ function VideoControlNode(props) {
       onNodeChange(node, event.currentTarget.value);
     }
   }, node.options.map(function (option) {
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("option", null, option.display_name);
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("option", {
+      value: option.numeric_value
+    }, option.display_name);
   })));
 }
 

@@ -29,7 +29,7 @@ export default function VideoControlNode(props){
         }
         // }
         
-        onNodeChange(node, value)
+        onNodeChange(node, parseFloat(value))
     }
 
     return <div className="inline field">
@@ -61,7 +61,7 @@ export default function VideoControlNode(props){
                 >
                     {
                         node.options.map(option => {
-                            return <option>
+                            return <option value={option.numeric_value}>
                                 {option.display_name}
                             </option>
                         })

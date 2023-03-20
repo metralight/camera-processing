@@ -2,6 +2,7 @@
 import logging
 import cv2
 import time
+import hjson
 import numpy as np
 
 from flask_socketio import SocketIO
@@ -13,6 +14,7 @@ class AbortedException(Exception):
 class App():
     EXCEPTIONS_FUNC = str
     VERSION = "0.1.0"
+    USER_CONFIG_FILE = "userSettings.hjson"
 
     def __init__(self, socketio : SocketIO, config, camera : HarvesterWrapper):
         super().__init__()
@@ -20,6 +22,8 @@ class App():
         self.socketio = socketio
         self.camera = camera
         self.config = config
+        with open(self.USER_CONFIG_FILE, "r") as f:
+            self.userConfig = hjson.load(f)
 
     def getImage(self):
         while True:
@@ -53,7 +57,9 @@ class App():
     def _formatException(self, e):
         return self.EXCEPTIONS_FUNC(e)
 
-    
+    def _saveUserConfig(self):
+        with open(self.USER_CONFIG_FILE, "w") as f:
+            f.write(hjson.dumps(self.userConfig, indent="\t"))
 
     def getConfig(self, unused):
         try:
@@ -80,8 +86,11 @@ class App():
         value = data["value"]
         node = data["node"]
 
+        self.userConfig["CAMERA"][node["name"]] = value
+        self._saveUserConfig()
+
         try:
-            nodes = self.camera.updateNode(node, value)
+            nodes = self.camera.updateNode(node["name"], value)
             return {
                 "result" : True,
                 "data" : nodes
@@ -92,7 +101,7 @@ class App():
                     
     def startCapture(self, device):
         try:
-            nodes = self.camera.startGrab(device)
+            nodes = self.camera.startGrab(device, self.userConfig["CAMERA"])
             return {
                 "result" : True,
                 "data" : nodes

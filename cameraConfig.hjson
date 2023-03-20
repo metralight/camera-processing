@@ -9,9 +9,10 @@
     // maximalni delka cteni jednoho framu
     FRAME_READ_TIMEOUT : 3
 
-    // preddefinovane hodnoty, ktere nastavit kamere
+    // preddefinovane hodnoty, ktere nastavit kamere po startu programu
     // nodes ktere kamera nema, jsou ignorovany
-    CAMERA_CONFIG_NODES : {
+    // pozdeji prenastaveno uzivatelskymi hodnotami USER_NODES
+    DEFAULT_CONFIG : {
         AcquisitionFrameRate : 10
         AcquisitionFrameRateEnable : true
         ExposureMode : "Timed" //0=Off, 1="timed"
@@ -20,7 +21,7 @@
 
     // nodes ktere budou zobrazeny uzivateli k nastaveni
     // pokud jsou k dispozici
-    CAMERA_EXPOSED_NODES : [
+    USER_NODES : [
         "ExposureAuto",
         "ExposureTime",
         "GainAuto",
