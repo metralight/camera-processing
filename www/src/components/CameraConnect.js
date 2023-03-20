@@ -6,7 +6,8 @@ export default function CameraConnect(props){
     const [prevDevices, setPrevDevices] = useState(null)
     const dropdownEl = useRef(null);
 
-    // pri prvnim nacteni dat do selectedDevice prvni kameru
+    // pri nacteni kde uz jsou vyctene devices dat do selectedDevice prvni kameru
+    // prvni nacteni devices pozname pomoci prevDevices
     if (devices && devices.length && prevDevices==null){
         setSelectedDevice(devices[0])
         setPrevDevices(devices)
@@ -83,7 +84,7 @@ export default function CameraConnect(props){
             &nbsp;
             <button className="ui button" disabled={working} onClick={onStartStopClick}>
                 <i className={(capturing ? "stop icon" : "play icon")} />
-                {(capturing ? "Stop capture" : "Start capture")}
+                {(capturing ? "Stop" : "Start")}
             </button>
         </div>
 }

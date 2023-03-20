@@ -90,11 +90,12 @@
 /*!*************************!*\
   !*** ./apiFunctions.js ***!
   \*************************/
-/*! exports provided: startCapture, stopCapture, getDevices, getConfig */
+/*! exports provided: updateNode, startCapture, stopCapture, getDevices, getConfig */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "updateNode", function() { return updateNode; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "startCapture", function() { return startCapture; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "stopCapture", function() { return stopCapture; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getDevices", function() { return getDevices; });
@@ -134,17 +135,20 @@ function actionCreator(socket, msgConstant, emitData) {
   });
 }
 
-function startCapture(_x, _x2) {
-  return _startCapture.apply(this, arguments);
+function updateNode(_x, _x2, _x3) {
+  return _updateNode.apply(this, arguments);
 }
 
-function _startCapture() {
-  _startCapture = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_0___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee(socket, deviceInfo) {
+function _updateNode() {
+  _updateNode = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_0___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee(socket, node, value) {
     return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            return _context.abrupt("return", actionCreator(socket, "START_CAPTURE", deviceInfo));
+            return _context.abrupt("return", actionCreator(socket, "UPDATE_NODE", {
+              node: node,
+              value: value
+            }));
 
           case 1:
           case "end":
@@ -153,20 +157,20 @@ function _startCapture() {
       }
     }, _callee);
   }));
+  return _updateNode.apply(this, arguments);
+}
+
+function startCapture(_x4, _x5) {
   return _startCapture.apply(this, arguments);
 }
 
-function stopCapture(_x3) {
-  return _stopCapture.apply(this, arguments);
-}
-
-function _stopCapture() {
-  _stopCapture = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_0___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee2(socket) {
+function _startCapture() {
+  _startCapture = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_0___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee2(socket, deviceInfo) {
     return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee2$(_context2) {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
-            return _context2.abrupt("return", actionCreator(socket, "STOP_CAPTURE"));
+            return _context2.abrupt("return", actionCreator(socket, "START_CAPTURE", deviceInfo));
 
           case 1:
           case "end":
@@ -175,20 +179,20 @@ function _stopCapture() {
       }
     }, _callee2);
   }));
+  return _startCapture.apply(this, arguments);
+}
+
+function stopCapture(_x6) {
   return _stopCapture.apply(this, arguments);
 }
 
-function getDevices(_x4) {
-  return _getDevices.apply(this, arguments);
-}
-
-function _getDevices() {
-  _getDevices = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_0___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee3(socket) {
+function _stopCapture() {
+  _stopCapture = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_0___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee3(socket) {
     return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee3$(_context3) {
       while (1) {
         switch (_context3.prev = _context3.next) {
           case 0:
-            return _context3.abrupt("return", actionCreator(socket, "GET_DEVICES"));
+            return _context3.abrupt("return", actionCreator(socket, "STOP_CAPTURE"));
 
           case 1:
           case "end":
@@ -197,20 +201,20 @@ function _getDevices() {
       }
     }, _callee3);
   }));
+  return _stopCapture.apply(this, arguments);
+}
+
+function getDevices(_x7) {
   return _getDevices.apply(this, arguments);
 }
 
-function getConfig(_x5) {
-  return _getConfig.apply(this, arguments);
-}
-
-function _getConfig() {
-  _getConfig = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_0___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee4(socket) {
+function _getDevices() {
+  _getDevices = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_0___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee4(socket) {
     return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee4$(_context4) {
       while (1) {
         switch (_context4.prev = _context4.next) {
           case 0:
-            return _context4.abrupt("return", actionCreator(socket, "GET_CONFIG"));
+            return _context4.abrupt("return", actionCreator(socket, "GET_DEVICES"));
 
           case 1:
           case "end":
@@ -218,6 +222,28 @@ function _getConfig() {
         }
       }
     }, _callee4);
+  }));
+  return _getDevices.apply(this, arguments);
+}
+
+function getConfig(_x8) {
+  return _getConfig.apply(this, arguments);
+}
+
+function _getConfig() {
+  _getConfig = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_0___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee5(socket) {
+    return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee5$(_context5) {
+      while (1) {
+        switch (_context5.prev = _context5.next) {
+          case 0:
+            return _context5.abrupt("return", actionCreator(socket, "GET_CONFIG"));
+
+          case 1:
+          case "end":
+            return _context5.stop();
+        }
+      }
+    }, _callee5);
   }));
   return _getConfig.apply(this, arguments);
 }
@@ -329,6 +355,18 @@ function App(props) {
     });
   }
 
+  function onNodeChange(node, value) {
+    setWorking(true);
+    Object(_apiFunctions__WEBPACK_IMPORTED_MODULE_4__["updateNode"])(socket, node, value).then(function (nodes) {
+      setWorking(false);
+      setControlNodes(nodes);
+    })["catch"](function (err) {
+      alertify.error("Can not update value: " + err);
+      console.log(err);
+      setWorking(false);
+    });
+  }
+
   if (!config) {
     return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(_Loader__WEBPACK_IMPORTED_MODULE_2__["default"], {
       text: "Loading data"
@@ -349,8 +387,8 @@ function App(props) {
     onStopCapture: onStopCaputure
   })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(_ErrorBoundary__WEBPACK_IMPORTED_MODULE_7__["default"], null, capturing && controlNodes ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(_VideoControls__WEBPACK_IMPORTED_MODULE_6__["default"], {
     nodes: controlNodes,
-    config: config,
-    io: socket
+    working: working,
+    onNodeChange: onNodeChange
   }) : null))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
     className: "twelve wide column"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(_ErrorBoundary__WEBPACK_IMPORTED_MODULE_7__["default"], null, capturing ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(_Video__WEBPACK_IMPORTED_MODULE_5__["default"], {
@@ -394,7 +432,8 @@ function CameraConnect(props) {
       prevDevices = _useState4[0],
       setPrevDevices = _useState4[1];
 
-  var dropdownEl = Object(react__WEBPACK_IMPORTED_MODULE_1__["useRef"])(null); // pri prvnim nacteni dat do selectedDevice prvni kameru
+  var dropdownEl = Object(react__WEBPACK_IMPORTED_MODULE_1__["useRef"])(null); // pri nacteni kde uz jsou vyctene devices dat do selectedDevice prvni kameru
+  // prvni nacteni devices pozname pomoci prevDevices
 
   if (devices && devices.length && prevDevices == null) {
     setSelectedDevice(devices[0]);
@@ -481,7 +520,7 @@ function CameraConnect(props) {
     onClick: onStartStopClick
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("i", {
     className: capturing ? "stop icon" : "play icon"
-  }), capturing ? "Stop capture" : "Start capture"));
+  }), capturing ? "Stop" : "Start"));
 }
 
 /***/ }),
@@ -634,12 +673,31 @@ function Video(props) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return VideoControlNode; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _babel_runtime_helpers_slicedToArray__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/slicedToArray */ "./node_modules/@babel/runtime/helpers/slicedToArray.js");
+/* harmony import */ var _babel_runtime_helpers_slicedToArray__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_slicedToArray__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
+
 
 function VideoControlNode(props) {
   var node = props.node,
+      working = props.working,
       onNodeChange = props.onNodeChange;
+
+  var _useState = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(null),
+      _useState2 = _babel_runtime_helpers_slicedToArray__WEBPACK_IMPORTED_MODULE_0___default()(_useState, 2),
+      prevNode = _useState2[0],
+      setPrevNode = _useState2[1];
+
+  var _useState3 = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(""),
+      _useState4 = _babel_runtime_helpers_slicedToArray__WEBPACK_IMPORTED_MODULE_0___default()(_useState3, 2),
+      value = _useState4[0],
+      setValue = _useState4[1];
+
+  if (!prevNode && node || prevNode && prevNode.value != node.value) {
+    setValue(node.value);
+    setPrevNode(node);
+  }
 
   function formatUnit(unit) {
     if (!unit) {
@@ -647,19 +705,48 @@ function VideoControlNode(props) {
     }
 
     return "[" + unit + "]";
+  } // typ number pres validacni funci a jen na blur
+  // jinak select prepnout hned vyberem volby
+
+
+  function onNumberBlur() {
+    // if (node.type === "number"){
+    if (value == undefined || value == null || value < node.min || value > node.max) {
+      alertify.error("Invalid value or out of range");
+      setValue("");
+      return;
+    } // }
+
+
+    onNodeChange(node, value);
   }
 
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
     className: "inline field"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("label", null, node.display_name, "\xA0", formatUnit(node.unit)), node.type === "number" ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("input", {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("label", null, node.display_name, "\xA0", formatUnit(node.unit)), node.type === "number" ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("input", {
     type: "number",
     min: node.min,
     max: node.max,
-    value: node.value
-  }) : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("select", {
-    value: node.value
+    value: value,
+    disabled: working,
+    onChange: function onChange(event) {
+      setValue(event.currentTarget.value);
+    },
+    onBlur: onNumberBlur,
+    onKeyDown: function onKeyDown(event) {
+      if (event.key === "Enter") {
+        event.currentTarget.blur();
+      }
+    }
+  }) : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("select", {
+    value: node.value,
+    disabled: working,
+    onChange: function onChange(event) {
+      setValue(event.currentTarget.value);
+      onNodeChange(node, event.currentTarget.value);
+    }
   }, node.options.map(function (option) {
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("option", null, option.display_name);
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("option", null, option.display_name);
   })));
 }
 
@@ -682,6 +769,7 @@ __webpack_require__.r(__webpack_exports__);
 
 function VideoControls(props) {
   var nodes = props.nodes,
+      working = props.working,
       onNodeChange = props.onNodeChange;
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
     className: "ui inline form",
@@ -690,7 +778,9 @@ function VideoControls(props) {
     }
   }, nodes.map(function (node) {
     return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_VideoControlNode__WEBPACK_IMPORTED_MODULE_1__["default"], {
+      key: node["name"],
       node: node,
+      working: working,
       onNodeChange: onNodeChange
     });
   }));

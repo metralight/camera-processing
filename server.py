@@ -43,6 +43,7 @@ socketio.on_event("GET_CONFIG",  app.getConfig)
 socketio.on_event("GET_DEVICES",  app.getDevices)
 socketio.on_event("START_CAPTURE",  app.startCapture)
 socketio.on_event("STOP_CAPTURE",  app.stopCapture)
+socketio.on_event("UPDATE_NODE",  app.updateNode)
 
 @socketio.on('connect')
 def test_connect(auth):

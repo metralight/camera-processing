@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react"
 import Loader from "./Loader"
 import { io } from "socket.io-client"
-import { startCapture, stopCapture, getDevices, getConfig } from "../apiFunctions"
+import { startCapture, stopCapture, getDevices, getConfig, updateNode } from "../apiFunctions"
 import Video from "./Video"
 import VideoControls from "./VideoControls"
 import ErrorBoundary from "./ErrorBoundary"
@@ -67,6 +67,18 @@ export default function App(props){
         })
     }
 
+    function onNodeChange(node, value){
+        setWorking(true)
+        updateNode(socket, node, value).then((nodes)=>{
+            setWorking(false)
+            setControlNodes(nodes)
+        }).catch((err) => {
+            alertify.error("Can not update value: " + err)
+            console.log(err)
+            setWorking(false)
+        })
+    }
+
     if (!config){
         return <Loader text="Loading data" />
     }
@@ -88,7 +100,11 @@ export default function App(props){
                     <ErrorBoundary>
                         {
                             (capturing && controlNodes) ? 
-                                <VideoControls nodes={controlNodes} config={config} io={socket} />
+                                <VideoControls
+                                    nodes={controlNodes}
+                                    working={working}
+                                    onNodeChange={onNodeChange}
+                                />
                                 :
                                 null
                         }

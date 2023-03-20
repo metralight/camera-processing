@@ -24,10 +24,13 @@ function actionCreator(socket, msgConstant, emitData){
     })
 }
 
+export async function updateNode (socket, node, value){
+    return actionCreator(socket, "UPDATE_NODE", {node, value})
+}
+
 export async function startCapture (socket, deviceInfo){
     return actionCreator(socket, "START_CAPTURE", deviceInfo)
 }
-
 
 export async function stopCapture (socket){
     return actionCreator(socket, "STOP_CAPTURE")

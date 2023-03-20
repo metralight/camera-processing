@@ -65,6 +65,34 @@ class HarvesterWrapper(AsyncIOEventEmitter):
             else:
                 return np.copy(self.image)
 
+    def updateNode(self, nodeDict, value):
+        try:
+            node = self.ia.remote_device.node_map.get_node(nodeDict["name"])
+            node.value = value
+        except Exception as e:
+            logging.exception(f"Can not update node value: {e}")
+
+        # vratit vsechny nodes updatovane
+        return self.getUserConfigNodes()
+    
+    def getUserConfigNodes(self):
+        # ulozit konfigurovatelne nodes
+        exposedNodes = []
+        for prop in self.config["CAMERA_EXPOSED_NODES"]:
+            node = None
+            try:
+                node = self.ia.remote_device.node_map.get_node(prop)
+            except Exception as err:
+                logging.warning(f"Can not get node: {prop}", exc_info=True)
+            if node is not None:
+                exposedNodes.append(node)
+        
+        # puvodne reformat nodes az v app, ale nefungovalo
+        # nejspis zamrlo kvuli asynchronne spustenemu videu
+        exposedNodes = self._harvestNodesToPython(exposedNodes)
+
+        return exposedNodes
+    
     def startGrab(self, deviceInfo):
         """
             V threadu nastartuje vycitani obrazu z kamery
@@ -88,19 +116,7 @@ class HarvesterWrapper(AsyncIOEventEmitter):
                 node.value = self.config["CAMERA_CONFIG_NODES"][prop]
         
         # ulozit konfigurovatelne nodes
-        exposedNodes = []
-        for prop in self.config["CAMERA_EXPOSED_NODES"]:
-            node = None
-            try:
-                node = self.ia.remote_device.node_map.get_node(prop)
-            except Exception as err:
-                logging.warning(f"Can not get node: {prop}", exc_info=True)
-            if node is not None:
-                exposedNodes.append(node)
-        
-        # puvodne reformat nodes az v app, ale nefungovalo
-        # nejspis zamrlo kvuli asynchronne spustenemu videu
-        exposedNodes = self._harvestNodesToPython(exposedNodes)
+        exposedNodes = self.getUserConfigNodes()
 
         self.grabThread = threading.Thread(target=self.grabbingWork)
         self.grabThread.setDaemon(True)

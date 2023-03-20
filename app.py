@@ -75,6 +75,21 @@ class App():
             logging.exception(e)
             return {"result" : False, "data" : self._formatException(e)}
         
+    def updateNode(self, data):
+        assert "value" in data and "node" in data, "Value or node not in data"
+        value = data["value"]
+        node = data["node"]
+
+        try:
+            nodes = self.camera.updateNode(node, value)
+            return {
+                "result" : True,
+                "data" : nodes
+            }
+        except Exception as e:
+            logging.exception(e)
+            return {"result" : False, "data" : self._formatException(e)}
+                    
     def startCapture(self, device):
         try:
             nodes = self.camera.startGrab(device)
