@@ -6,22 +6,21 @@ import numpy as np
 import logging
 import sys
 
-class CamImg:
+class CameraImg:
 
-    def __init__( self, img_src, pixel_size, treshold_proc, center_x_um, center_y_um ):
+    def __init__( self, img_src, pixel_size, treshold_proc, maxWidth, maxHeight, center_x_um=0, center_y_um=0):
         self.pixel_size = pixel_size
         self.treshold_proc = treshold_proc
         self.center_x_um = center_x_um
         self.center_y_um = center_y_um
 
-        self.img_src = img_src
-        self.img_dst = np.copy(img_src)
+        self.resizeFactor, self.img_src = self.resizeToMaxDimensions(img_src, maxWidth, maxHeight)
+        self.img_dst = np.copy(self.img_src)
 
-        #self.img_src = cv2.bilateralFilter(self.img_src,9,200,75)
-        self.img_src = cv2.medianBlur(self.img_src,5)
+        # neni nutne - jeste nasleduce gaussian na img_gray
+        # self.img_src = cv2.medianBlur(self.img_src, 5)
 
         self.img_gray = cv2.cvtColor(self.img_src, cv2.COLOR_BGR2GRAY)
-        #self.img_gray = cv2.GaussianBlur(self.img_gray, (11,11), 0)
         self.img_gray = cv2.GaussianBlur(self.img_gray, (25,25), 0)
 
         (minVal, maxVal, minLoc, maxLoc) = cv2.minMaxLoc(self.img_gray)
@@ -30,7 +29,7 @@ class CamImg:
         #cv2.circle(self.img_gray, maxLoc, 5, (255, 0, 0), 2)
 
         th = maxVal - (maxVal/100.*self.treshold_proc)
-        ret, self.img_calc =cv2.threshold(self.img_gray,th,maxVal,cv2.THRESH_TOZERO)
+        ret, self.img_calc = cv2.threshold(self.img_gray,th,maxVal,cv2.THRESH_TOZERO)
         
         self.centroid_x_px = None
         self.centroid_y_px = None
@@ -44,10 +43,18 @@ class CamImg:
         self.beam_volume_px = 0
 
         self.line_width = 1
-        self.line_width_2 = 2
-        self.font_size = 0.6
+        self.line_width_centroid_cut = 2
+        self.font_size = 0.3
         self.font_line_width = 1
 
+    def resizeToMaxDimensions(self, image, maxWidth, maxHeight):
+        f1 = maxWidth / image.shape[1]
+        f2 = maxHeight / image.shape[0]
+        f = min(f1, f2)  # resizing factor
+        dim = (int(image.shape[1] * f), int(image.shape[0] * f))
+        resized = cv2.resize(image, dim, interpolation = cv2.INTER_AREA)
+        return f, resized
+    
     def process( self ):
         self.get_centroid_pos()
         #self.img_gray[self.img_gray<50] = 0
@@ -61,24 +68,24 @@ class CamImg:
         hsv[:,:,2] = np.sqrt(self.img_gray.astype("uint16"))*16
         self.img_dst = cv2.cvtColor(hsv.astype("uint8"),cv2.COLOR_HSV2BGR)
         if self.centroid_x_px is not None:
-            self.get_beam_size()
+            # self.get_beam_size()
             self.draw_centroid()
             self.draw_centroid_cut()
-            self.draw_beam_size()
+            # self.draw_beam_size()
             self.draw_measures()
         else:
             cv2.putText(self.img_dst, "Centroid not found.", (10, 50),cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
     def get_calculated_data(self):
         return {
-                'centroid_x_px' : self.centroid_x_px if self.centroid_x_px is not None else 0,
-                'centroid_y_px' : self.centroid_y_px if self.centroid_y_px is not None else 0,
-                'centroid_center_dist_x_px' : self.centroid_center_dist_x_px,
-                'centroid_center_dist_y_px' : self.centroid_center_dist_y_px,
-                'beam_width_px' : self.beam_width_px,
-                'beam_height_px' : self.beam_height_px,
-                'beam_volume_px' : self.beam_volume_px,
-                }
+            'centroid_x_px' : self.centroid_x_px if self.centroid_x_px is not None else 0,
+            'centroid_y_px' : self.centroid_y_px if self.centroid_y_px is not None else 0,
+            'centroid_center_dist_x_px' : self.centroid_center_dist_x_px,
+            'centroid_center_dist_y_px' : self.centroid_center_dist_y_px,
+            'beam_width_px' : self.beam_width_px,
+            'beam_height_px' : self.beam_height_px,
+            'beam_volume_px' : self.beam_volume_px,
+        }
 
     def get_centroid_pos( self ):
         # calculate moments of binary image
@@ -150,10 +157,10 @@ class CamImg:
 
         for x in range(0,w-1):
             #self.img_dst[lx[x]][x] = (0,255,0)
-            cv2.line(self.img_dst, (x,h-lx[x]), (x+1,h-lx[x+1]), (0,255,255), self.line_width_2) 
+            cv2.line(self.img_dst, (x,h-lx[x]), (x+1,h-lx[x+1]), (0,255,255), self.line_width_centroid_cut) 
         for y in range(0,h-1):
             #self.img_dst[y][ly[y]] = (0,0,255 )
-            cv2.line(self.img_dst, (ly[y],y), (ly[y+1],y+1), (0,255,255), self.line_width_2) 
+            cv2.line(self.img_dst, (ly[y],y), (ly[y+1],y+1), (0,255,255), self.line_width_centroid_cut) 
 
     def draw_beam_size( self ):
         if self.centroid_x_px is None:
@@ -169,17 +176,18 @@ class CamImg:
         h = self.img_dst.shape[0]
         w = self.img_dst.shape[1]
 
-        zero_x = -1*int(self.center_x_um/self.pixel_size)
-        zero_y = -1*int(self.center_y_um/self.pixel_size)
+        zero_x = -1*int(self.center_x_um/(self.pixel_size/self.resizeFactor))
+        zero_y = -1*int(self.center_y_um/(self.pixel_size/self.resizeFactor))
 
         #cross
         #cv2.line(self.img_dst, (int(w/2)+zero_x,0), (int(w/2)+zero_x,h), (150,150,150), self.line_width) 
         #cv2.line(self.img_dst, (0,int(h/2)+zero_y), (w,int(h/2)+zero_y), (150,150,150), self.line_width) 
-        cross_sz = 20
+        cross_sz = int(h / 40 )
+        meas_big_line_size = int(h / 80 )
         cv2.line(self.img_dst, (int(w/2)+zero_x,int(h/2)+zero_y-cross_sz), (int(w/2)+zero_x,int(h/2)+zero_y+cross_sz), (255,255,255), self.line_width) 
         cv2.line(self.img_dst, (int(w/2)+zero_x-cross_sz,int(h/2)+zero_y), (int(w/2)+zero_x+cross_sz,int(h/2)+zero_y), (255,255,255), self.line_width) 
 
-        big_step = int(1000/self.pixel_size)
+        big_step = int(1000/(self.pixel_size/self.resizeFactor))
         small_step = int(big_step / 10)
 
         #label = ((int(self.centroid_x_px / big_step) + 1) * -1000)
@@ -189,12 +197,12 @@ class CamImg:
         label = ((int(((w/2)+zero_x) / big_step) + 1) * -1000)
         start = int((((w/2)+zero_x) % big_step) - big_step)
         for x in range(start,w,big_step):
-            cv2.line(self.img_dst, (x,w), (x,h-20), (255,255,255), self.line_width) 
+            cv2.line(self.img_dst, (x,w), (x,h-meas_big_line_size), (255,255,255), self.line_width) 
             txt_sz = cv2.getTextSize(str(label), cv2.FONT_HERSHEY_SIMPLEX, self.font_size, self.font_line_width)
-            cv2.putText(self.img_dst, str(label), (int(x - txt_sz[0][0]/2), h - 30),cv2.FONT_HERSHEY_SIMPLEX, self.font_size, (255, 255, 255), self.font_line_width)
+            cv2.putText(self.img_dst, str(label), (int(x - txt_sz[0][0]/2), h - (meas_big_line_size + 5)),cv2.FONT_HERSHEY_SIMPLEX, self.font_size, (255, 255, 255), self.font_line_width)
             cnt = 0
             for x2 in range(0,big_step,small_step):
-                ln_len =  20 if cnt == 5 else 10
+                ln_len = meas_big_line_size if cnt == 5 else int(meas_big_line_size / 2)
                 cv2.line(self.img_dst, (x+x2,w), (x+x2,h-ln_len), (255,255,255), self.line_width) 
                 cnt += 1
             label += 1000
@@ -253,7 +261,7 @@ def img_resize( img, sz = 1 ):
 
 if __name__ == "__main__":
     img = cv2.imread(sys.argv[1])
-    ci = CamImg( img, 5.86, 15, -200, -200 )
+    ci = CameraImg( img, 5.86, 15, -200, -200 )
     #cv2.imshow("Image", img_resize(img,0.3))
     #cv2.waitKey(0)
     ret = ci.process()

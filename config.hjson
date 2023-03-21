@@ -13,6 +13,18 @@
     JPG_QUALITY : 90
 
     // maximalni rozmery snimku pred posilanim na web
-    IMAGE_MAX_W : 1600
-    IMAGE_MAX_H : 800
+    IMAGE_MAX_W : 1200
+    IMAGE_MAX_H : 600
+
+    // rozmer pixelu v um pro pouzivane kamery
+    // pri pouziti nove kamery se zde musi doplnit podle celeho nazvu modelu 
+    PIXEL_SIZE : {
+        "STC_CMC4MPOE" : 5.5
+        "acA1920-155um" : 5.86
+    }
+
+    //procesovaci konstanty
+    PROCESSING : {
+        THRESHOLD_PERC : 10 //uroven svetla od ktere vse nizsi zahazujeme - dynamicky v procentech proti maximu v obrazu
+    }
 }

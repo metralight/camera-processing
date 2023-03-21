@@ -7,6 +7,7 @@ import numpy as np
 
 from flask_socketio import SocketIO
 from harvesterWrapper import HarvesterWrapper
+from cameraImg import CameraImg
 
 class AbortedException(Exception):
     pass
@@ -15,6 +16,8 @@ class App():
     EXCEPTIONS_FUNC = str
     VERSION = "0.1.0"
     USER_CONFIG_FILE = "userSettings.hjson"
+
+    captureDeviceName = ""
 
     def __init__(self, socketio : SocketIO, config, camera : HarvesterWrapper):
         super().__init__()
@@ -30,7 +33,15 @@ class App():
             image = self.camera.getImage()
             imageBytes = b""
             if image is not None:
-                imgEnc = cv2.imencode("."+self.config["IMAGE_COMPRESSION"], self._resizeToMaxDimensions(image))
+                ci = CameraImg(
+                    image,
+                    self.config["PIXEL_SIZE"][self.captureDeviceName],
+                    self.config["PROCESSING"]["THRESHOLD_PERC"],
+                    self.config['IMAGE_MAX_W'],
+                    self.config['IMAGE_MAX_H']
+                )
+                ci.process()
+                imgEnc = cv2.imencode("."+self.config["IMAGE_COMPRESSION"], ci.img_dst)
                 if imgEnc[0]:
                     imageBytes = imgEnc[1].tobytes()
                 
@@ -44,15 +55,6 @@ class App():
                 # dodelat nejaky prazdny image "Capture off"
                 pass
             time.sleep(0.01)
-                
-    def _resizeToMaxDimensions(self, image):
-        f1 = self.config['IMAGE_MAX_W'] / image.shape[1]
-        f2 = self.config['IMAGE_MAX_H'] / image.shape[0]
-        f = min(f1, f2)  # resizing factor
-        dim = (int(image.shape[1] * f), int(image.shape[0] * f))
-        resized = cv2.resize(image, dim, interpolation = cv2.INTER_AREA)
-        return resized
-
     
     def _formatException(self, e):
         return self.EXCEPTIONS_FUNC(e)
@@ -102,6 +104,7 @@ class App():
     def startCapture(self, device):
         try:
             nodes = self.camera.startGrab(device, self.userConfig["CAMERA"])
+            self.captureDeviceName = device["model"]
             return {
                 "result" : True,
                 "data" : nodes
