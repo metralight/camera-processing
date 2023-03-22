@@ -23,9 +23,9 @@ class App():
         super().__init__()
 
         self.socketio = socketio
-        self.camera = camera
+        self.camera : HarvesterWrapper = camera
         self.config = config
-        self.currImage = None
+        self.currImage : CameraImg = None
         with open(self.USER_CONFIG_FILE, "r") as f:
             self.userConfig = hjson.load(f)
 
@@ -98,6 +98,16 @@ class App():
             logging.exception(e)
             return {"result" : False, "data" : self._formatException(e)}
         
+    def getMeasuringData(self, unused):
+        try:
+            return {
+                "result" : True,
+                "data" : self.currImage.get_calculated_data() if self.currImage else None
+            }
+        except Exception as e:
+            logging.exception(e)
+            return {"result" : False, "data" : self._formatException(e)}
+
     def updateNode(self, data):
         assert "value" in data and "node" in data, "Value or node not in data"
         value = data["value"]

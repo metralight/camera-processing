@@ -43,3 +43,7 @@ export async function getDevices (socket){
 export async function getConfig (socket){
     return actionCreator(socket, "GET_CONFIG")
 }
+
+export async function getMeasData (socket){
+    return actionCreator(socket, "GET_MEAS_DATA")
+}

@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from "react"
 import Loader from "./Loader"
 import { io } from "socket.io-client"
-import { startCapture, stopCapture, getDevices, getConfig, updateNode } from "../apiFunctions"
+import { startCapture, stopCapture, getDevices, getConfig, updateNode, getMeasData } from "../apiFunctions"
 import Video from "./Video"
 import VideoControls from "./VideoControls"
 import ErrorBoundary from "./ErrorBoundary"
 import CameraConnect from "./CameraConnect"
+import MeasData from "./MeasData"
 
 
 const socket = io();
@@ -17,8 +18,14 @@ export default function App(props){
     const [config, setConfig] = useState(null)
     const [devices, setDevices] = useState(null)
     const [controlNodes, setControlNodes] = useState(null)
-    const [working, setWorking] = useState(null)
-    const [capturing, setCapturing] = useState(null)
+    const [working, setWorking] = useState(false)
+    const [capturing, setCapturing] = useState(false)
+    const capturingRef = useRef(false)
+    const [measuringData, setMeasuringData] = useState(null)
+
+    useEffect(() => {
+        capturingRef.current = capturing
+    }, [capturing])
 
     useEffect(() => {
         getDevices(socket).then((devices) => {
@@ -36,34 +43,50 @@ export default function App(props){
         })  
         
     }, [])
+
+    function getMeasuringDataStream(){
+        getMeasData(socket).then((data) => {
+            console.log(data)
+            setMeasuringData(data)
+        }).catch((data) => {
+            console.error(data)
+            alertify.error("Error while getting measuring data")
+        }).finally(() => {
+            setTimeout(() => {
+                if (capturingRef.current){
+                    getMeasuringDataStream()
+                }
+            }, 20)
+        })
+    }
     
     function onStartCaputure(device){
         setWorking(true)
         startCapture(socket, device).then((controlNodes)=>{
-            setWorking(false)
             setCapturing(true)
             setControlNodes(controlNodes)
+            getMeasuringDataStream()
         }).catch((err) => {
             alertify.error("Can not start capture: " + err)
             console.log(err)
-            setWorking(false)
             setCapturing(false)
             setControlNodes(null)
+        }).finally(() => {
+            setWorking(false)
         })
     }
 
     function onStopCaputure(device){
         setWorking(true)
         stopCapture(socket).then(()=>{
-            setWorking(false)
             setCapturing(false)
             setControlNodes(null)
+            setMeasuringData(null)
         }).catch((err) => {
             alertify.error("Can not stop capture: " + err)
             console.log(err)
+        }).finally(() => {
             setWorking(false)
-            setCapturing(false)
-            setControlNodes(null)
         })
     }
 
@@ -111,6 +134,10 @@ export default function App(props){
                             }
                         </ErrorBoundary>
                     </div>
+
+                    {
+                        (capturing && measuringData) && <MeasData data={measuringData} />
+                    }
                 </div>
 
                 <div className="thirteen wide column">
@@ -125,19 +152,21 @@ export default function App(props){
                             }
                         </div>
                         <div className="nine wide column">
-                            <h3>Horizontal centroid</h3>
                             {   capturing ? 
-                                    <div>
+                                    <React.Fragment>
+                                        <h3>Horizontal centroid</h3>
                                         <img src="/cut_horizontal" />
-                                    </div>
+                                    </React.Fragment>
                                     :
                                     null
                             }
                         </div>
                         <div className="seven wide column">
-                            <h3>Vertical centroid</h3>
                             {   capturing ?
-                                    <img src="/cut_vertical" />
+                                    <React.Fragment>
+                                        <h3>Vertical centroid</h3>
+                                        <img src="/cut_vertical" />
+                                    </React.Fragment>
                                     :
                                     null
                             }

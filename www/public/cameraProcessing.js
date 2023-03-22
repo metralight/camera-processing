@@ -90,7 +90,7 @@
 /*!*************************!*\
   !*** ./apiFunctions.js ***!
   \*************************/
-/*! exports provided: updateNode, startCapture, stopCapture, getDevices, getConfig */
+/*! exports provided: updateNode, startCapture, stopCapture, getDevices, getConfig, getMeasData */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -100,6 +100,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "stopCapture", function() { return stopCapture; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getDevices", function() { return getDevices; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getConfig", function() { return getConfig; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getMeasData", function() { return getMeasData; });
 /* harmony import */ var _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ "./node_modules/@babel/runtime/helpers/asyncToGenerator.js");
 /* harmony import */ var _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _babel_runtime_helpers_typeof__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/typeof */ "./node_modules/@babel/runtime/helpers/typeof.js");
@@ -248,6 +249,28 @@ function _getConfig() {
   return _getConfig.apply(this, arguments);
 }
 
+function getMeasData(_x9) {
+  return _getMeasData.apply(this, arguments);
+}
+
+function _getMeasData() {
+  _getMeasData = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_0___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee6(socket) {
+    return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee6$(_context6) {
+      while (1) {
+        switch (_context6.prev = _context6.next) {
+          case 0:
+            return _context6.abrupt("return", actionCreator(socket, "GET_MEAS_DATA"));
+
+          case 1:
+          case "end":
+            return _context6.stop();
+        }
+      }
+    }, _callee6);
+  }));
+  return _getMeasData.apply(this, arguments);
+}
+
 /***/ }),
 
 /***/ "./components/App.js":
@@ -271,6 +294,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _VideoControls__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./VideoControls */ "./components/VideoControls.js");
 /* harmony import */ var _ErrorBoundary__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./ErrorBoundary */ "./components/ErrorBoundary.js");
 /* harmony import */ var _CameraConnect__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./CameraConnect */ "./components/CameraConnect.js");
+/* harmony import */ var _MeasData__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./MeasData */ "./components/MeasData.js");
+
 
 
 
@@ -300,16 +325,26 @@ function App(props) {
       controlNodes = _useState6[0],
       setControlNodes = _useState6[1];
 
-  var _useState7 = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(null),
+  var _useState7 = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(false),
       _useState8 = _babel_runtime_helpers_slicedToArray__WEBPACK_IMPORTED_MODULE_0___default()(_useState7, 2),
       working = _useState8[0],
       setWorking = _useState8[1];
 
-  var _useState9 = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(null),
+  var _useState9 = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(false),
       _useState10 = _babel_runtime_helpers_slicedToArray__WEBPACK_IMPORTED_MODULE_0___default()(_useState9, 2),
       capturing = _useState10[0],
       setCapturing = _useState10[1];
 
+  var capturingRef = Object(react__WEBPACK_IMPORTED_MODULE_1__["useRef"])(false);
+
+  var _useState11 = Object(react__WEBPACK_IMPORTED_MODULE_1__["useState"])(null),
+      _useState12 = _babel_runtime_helpers_slicedToArray__WEBPACK_IMPORTED_MODULE_0___default()(_useState11, 2),
+      measuringData = _useState12[0],
+      setMeasuringData = _useState12[1];
+
+  Object(react__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
+    capturingRef.current = capturing;
+  }, [capturing]);
   Object(react__WEBPACK_IMPORTED_MODULE_1__["useEffect"])(function () {
     Object(_apiFunctions__WEBPACK_IMPORTED_MODULE_4__["getDevices"])(socket).then(function (devices) {
       setDevices(devices);
@@ -325,33 +360,49 @@ function App(props) {
     });
   }, []);
 
+  function getMeasuringDataStream() {
+    Object(_apiFunctions__WEBPACK_IMPORTED_MODULE_4__["getMeasData"])(socket).then(function (data) {
+      console.log(data);
+      setMeasuringData(data);
+    })["catch"](function (data) {
+      console.error(data);
+      alertify.error("Error while getting measuring data");
+    })["finally"](function () {
+      setTimeout(function () {
+        if (capturingRef.current) {
+          getMeasuringDataStream();
+        }
+      }, 20);
+    });
+  }
+
   function onStartCaputure(device) {
     setWorking(true);
     Object(_apiFunctions__WEBPACK_IMPORTED_MODULE_4__["startCapture"])(socket, device).then(function (controlNodes) {
-      setWorking(false);
       setCapturing(true);
       setControlNodes(controlNodes);
+      getMeasuringDataStream();
     })["catch"](function (err) {
       alertify.error("Can not start capture: " + err);
       console.log(err);
-      setWorking(false);
       setCapturing(false);
       setControlNodes(null);
+    })["finally"](function () {
+      setWorking(false);
     });
   }
 
   function onStopCaputure(device) {
     setWorking(true);
     Object(_apiFunctions__WEBPACK_IMPORTED_MODULE_4__["stopCapture"])(socket).then(function () {
-      setWorking(false);
       setCapturing(false);
       setControlNodes(null);
+      setMeasuringData(null);
     })["catch"](function (err) {
       alertify.error("Can not stop capture: " + err);
       console.log(err);
+    })["finally"](function () {
       setWorking(false);
-      setCapturing(false);
-      setControlNodes(null);
     });
   }
 
@@ -391,7 +442,9 @@ function App(props) {
     nodes: controlNodes,
     working: working,
     onNodeChange: onNodeChange
-  }) : null))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+  }) : null)), capturing && measuringData && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(_MeasData__WEBPACK_IMPORTED_MODULE_9__["default"], {
+    data: measuringData
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
     className: "thirteen wide column"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
     className: "ui grid"
@@ -401,13 +454,13 @@ function App(props) {
     src: "/main"
   })) : null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
     className: "nine wide column"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h3", null, "Horizontal centroid"), capturing ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("img", {
+  }, capturing ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_1___default.a.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h3", null, "Horizontal centroid"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("img", {
     src: "/cut_horizontal"
   })) : null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
     className: "seven wide column"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h3", null, "Vertical centroid"), capturing ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("img", {
+  }, capturing ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_1___default.a.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("h3", null, "Vertical centroid"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("img", {
     src: "/cut_vertical"
-  }) : null)))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+  })) : null)))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
     className: "row"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
     className: "eight wide column"
@@ -653,6 +706,43 @@ function Loader(props) {
   }, text ? text : "Loading data"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null), children ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
     className: ""
   }, children) : null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("p", null));
+}
+
+/***/ }),
+
+/***/ "./components/MeasData.js":
+/*!********************************!*\
+  !*** ./components/MeasData.js ***!
+  \********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return MeasData; });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+
+function MeasData(props) {
+  var data = props.data; // 'centroid_x_px' : "Centroid X [px]",
+  // 'centroid_y_px' : self.centroid_y_px if self.centroid_y_px is not None else 0,
+  // 'centroid_center_dist_x_px' : self.centroid_center_dist_x_px,
+  // 'centroid_center_dist_y_px' : self.centroid_center_dist_y_px,
+  // 'centroid_center_dist_x_um'  : round(self.pixToUm(self.centroid_center_dist_x_px)-self.center_x_um, 2),
+  // 'centroid_center_dist_y_um'  : round(self.pixToUm(self.centroid_center_dist_y_px)-self.center_y_um, 2),
+  // 'beam_width_px' : self.beam_width_px,
+  // 'beam_height_px' : self.beam_height_px,
+  // 'beam_width_um' : self.pixToUm(self.beam_width_px),
+  // 'beam_height_um' : self.pixToUm(self.beam_height_px),
+  // 'beam_volume_px' : self.beam_volume_px,
+
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h2", null, "Measurement data"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("table", {
+    className: "ui very compact celled table"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("thead", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("th", {
+    className: "eight wide"
+  }, "Param"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("th", {
+    className: "eight wide"
+  }, "Value"))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tbody", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, "Centroid X [um]"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, data.centroid_center_dist_x_um)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, "Centroid Y [um]"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, data.centroid_center_dist_y_um)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, "Centroid width [um]"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, data.beam_width_um)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, "Centroid height [um]"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("td", null, data.beam_height_um)))));
 }
 
 /***/ }),

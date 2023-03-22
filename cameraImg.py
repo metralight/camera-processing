@@ -58,6 +58,9 @@ class CameraImg:
         resized = cv2.resize(image, dim, interpolation = cv2.INTER_AREA)
         return f, resized
     
+    def pixToUm(self, pixVal):
+        return pixVal * (self.pixel_size / self.resizeFactor)
+    
     def process( self ):
         self.get_centroid_pos()
         #self.img_gray[self.img_gray<50] = 0
@@ -71,10 +74,10 @@ class CameraImg:
         hsv[:,:,2] = np.sqrt(self.img_gray.astype("uint16"))*16
         self.img_dst = cv2.cvtColor(hsv.astype("uint8"),cv2.COLOR_HSV2BGR)
         if self.centroid_x_px is not None:
-            # self.get_beam_size()
             self.draw_measures()
             self.draw_centroid()
             self.draw_centroid_cut()
+            self.calc_beam_size() #nakonec - zavisi na centroidu
             # self.draw_beam_size()
         else:
             cv2.putText(self.img_dst, "Centroid not found.", (10, 50),cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
@@ -85,8 +88,12 @@ class CameraImg:
             'centroid_y_px' : self.centroid_y_px if self.centroid_y_px is not None else 0,
             'centroid_center_dist_x_px' : self.centroid_center_dist_x_px,
             'centroid_center_dist_y_px' : self.centroid_center_dist_y_px,
+            'centroid_center_dist_x_um'  : round(self.pixToUm(self.centroid_center_dist_x_px)-self.center_x_um, 2),
+            'centroid_center_dist_y_um'  : round(self.pixToUm(self.centroid_center_dist_y_px)-self.center_y_um, 2),
             'beam_width_px' : self.beam_width_px,
             'beam_height_px' : self.beam_height_px,
+            'beam_width_um' : self.pixToUm(self.beam_width_px),
+            'beam_height_um' : self.pixToUm(self.beam_height_px),
             'beam_volume_px' : self.beam_volume_px,
         }
 
@@ -100,11 +107,11 @@ class CameraImg:
 
             w = self.img_calc.shape[1]
             h = self.img_calc.shape[0]
-            self.centroid_center_dist_x_px = (w / 2) - self.centroid_x_px
+            self.centroid_center_dist_x_px = -((w / 2) - self.centroid_x_px)
             self.centroid_center_dist_y_px = (h / 2) - self.centroid_y_px
 
 
-    def get_beam_size( self ):
+    def calc_beam_size( self ):
         w = self.img_gray.shape[1]
         h = self.img_gray.shape[0]
         bw = 0
@@ -135,8 +142,9 @@ class CameraImg:
         x2 = self.beam_width_left_px + self.beam_width_px
         y1 = self.beam_height_top_px
         y2 = self.beam_height_top_px + self.beam_height_px
-        aa = self.img_gray[y1:y2,x1:x2]
-        self.beam_volume_px = np.sum(aa)
+        # beam volume vypnute
+        # aa = self.img_gray[y1:y2,x1:x2]
+        # self.beam_volume_px = np.sum(aa)
 
     def draw_centroid( self ):
         if self.centroid_x_px is not None:
@@ -210,7 +218,7 @@ class CameraImg:
         #start = (self.centroid_x_px % big_step) - big_step
         #label = ((int((w/2) / big_step) + 1) * -1000)
         #start = int(((w/2) % big_step) - big_step)
-        label = ((round(((w/2)+zero_x) / big_step) + 1) * -1000)
+        label = (int(((w/2)+zero_x) / big_step) + 1) * -1000 #pocitaji se cele dilky, musi byt floor
         start = round((((w/2)+zero_x) % big_step) - big_step)
         for i in np.arange(start,w,big_step):
             x = round(i)
@@ -232,7 +240,7 @@ class CameraImg:
         #label = (int((h/2) / big_step) + 1) * -1000
         #start = int(((h/2) % big_step) - big_step)
 
-        label = (int(((h/2)+zero_y) / big_step) + 1) * + 1000
+        label = (int(((h/2)+zero_y) / big_step) + 1) * + 1000 #pocitaji se cele dilky, musi byt floor
         start = int((((h/2)+zero_y) % big_step) - big_step)
         for i in np.arange(start,h,big_step):
             y = round(i)
