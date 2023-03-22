@@ -86,41 +86,71 @@ export default function App(props){
     return <div>
        
         <div className="ui grid">
-            <div className="four wide column">
-                <div className="ui message">
-                    <ErrorBoundary>
-                        <CameraConnect 
-                            devices={devices}
-                            onStartCaputure={onStartCaputure}
-                            working={working}
-                            capturing={capturing}
-                            onStopCapture={onStopCaputure}
-                        />
-                    </ErrorBoundary>
-                    <ErrorBoundary>
-                        {
-                            (capturing && controlNodes) ? 
-                                <VideoControls
-                                    nodes={controlNodes}
-                                    working={working}
-                                    onNodeChange={onNodeChange}
-                                />
-                                :
-                                null
-                        }
-                    </ErrorBoundary>
+            <div className="row">
+                <div className="three wide column">
+                    <div className="ui message">
+                        <ErrorBoundary>
+                            <CameraConnect 
+                                devices={devices}
+                                onStartCaputure={onStartCaputure}
+                                working={working}
+                                capturing={capturing}
+                                onStopCapture={onStopCaputure}
+                            />
+                        </ErrorBoundary>
+                        <ErrorBoundary>
+                            {
+                                (capturing && controlNodes) ? 
+                                    <VideoControls
+                                        nodes={controlNodes}
+                                        working={working}
+                                        onNodeChange={onNodeChange}
+                                    />
+                                    :
+                                    null
+                            }
+                        </ErrorBoundary>
+                    </div>
                 </div>
+
+                <div className="thirteen wide column">
+                    <div className="ui grid">
+                        <div className="sixteen wide column">
+                            {   capturing ? 
+                                    <div>
+                                        <img src="/main" />
+                                    </div>
+                                    :
+                                    null
+                            }
+                        </div>
+                        <div className="nine wide column">
+                            <h3>Horizontal centroid</h3>
+                            {   capturing ? 
+                                    <div>
+                                        <img src="/cut_horizontal" />
+                                    </div>
+                                    :
+                                    null
+                            }
+                        </div>
+                        <div className="seven wide column">
+                            <h3>Vertical centroid</h3>
+                            {   capturing ?
+                                    <img src="/cut_vertical" />
+                                    :
+                                    null
+                            }
+                        </div>
+                    </div>
+                    
+                </div>
+
+                
             </div>
 
-            <div className="twelve wide column">
-                <ErrorBoundary>
-                    {
-                        capturing ? 
-                            <Video config={config} io={socket} />
-                            :
-                            null
-                    }
-                </ErrorBoundary>
+            <div className="row">
+                <div className="eight wide column"></div>
             </div>
         </div>
     </div>

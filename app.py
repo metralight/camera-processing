@@ -25,23 +25,39 @@ class App():
         self.socketio = socketio
         self.camera = camera
         self.config = config
+        self.currImage = None
         with open(self.USER_CONFIG_FILE, "r") as f:
             self.userConfig = hjson.load(f)
+
+    def getCutImage(self, type):
+        while True:
+            if self.currImage is not None:
+                imgToSend = self.currImage.cut_vertical if type=="vertical"else self.currImage.cut_horizontal
+                imgEnc = cv2.imencode("."+self.config["IMAGE_COMPRESSION"], imgToSend)
+                if imgEnc[0]:
+                    imageBytes = imgEnc[1].tobytes()
+                
+                res = bytes("--frame\r\n", encoding="utf-8")
+                res += bytes(f"Content-Type: image/{self.config['IMAGE_COMPRESSION']}\r\n\r\n", encoding="utf-8")
+                res += imageBytes
+                res += bytes("\r\n", encoding="utf-8")
+                yield res
 
     def getImage(self):
         while True:
             image = self.camera.getImage()
             imageBytes = b""
             if image is not None:
-                ci = CameraImg(
+                newImg = CameraImg(
                     image,
                     self.config["PIXEL_SIZE"][self.captureDeviceName],
                     self.config["PROCESSING"]["THRESHOLD_PERC"],
                     self.config['IMAGE_MAX_W'],
                     self.config['IMAGE_MAX_H']
                 )
-                ci.process()
-                imgEnc = cv2.imencode("."+self.config["IMAGE_COMPRESSION"], ci.img_dst)
+                newImg.process()
+                self.currImage = newImg
+                imgEnc = cv2.imencode("."+self.config["IMAGE_COMPRESSION"], self.currImage.img_dst)
                 if imgEnc[0]:
                     imageBytes = imgEnc[1].tobytes()
                 
@@ -54,7 +70,6 @@ class App():
                 # TODO
                 # dodelat nejaky prazdny image "Capture off"
                 pass
-            time.sleep(0.01)
     
     def _formatException(self, e):
         return self.EXCEPTIONS_FUNC(e)

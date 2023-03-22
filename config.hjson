@@ -13,7 +13,7 @@
     JPG_QUALITY : 90
 
     // maximalni rozmery snimku pred posilanim na web
-    IMAGE_MAX_W : 1200
+    IMAGE_MAX_W : 800
     IMAGE_MAX_H : 600
 
     // rozmer pixelu v um pro pouzivane kamery

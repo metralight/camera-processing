@@ -35,9 +35,17 @@ app = App(socketio, config, cam)
 def index():
     return flaskApp.send_static_file("index.html")
 
-@flaskApp.route('/video')
-def video():
+@flaskApp.route('/main')
+def main():
     return Response(app.getImage(), mimetype="multipart/x-mixed-replace; boundary=frame")
+
+@flaskApp.route('/cut_vertical')
+def cutve_rtical():
+    return Response(app.getCutImage("vertical"), mimetype="multipart/x-mixed-replace; boundary=frame")
+
+@flaskApp.route('/cut_horizontal')
+def cut_horizontal():
+    return Response(app.getCutImage("horizontal"), mimetype="multipart/x-mixed-replace; boundary=frame")
 
 @socketio.on_error_default
 def handlerError(e):

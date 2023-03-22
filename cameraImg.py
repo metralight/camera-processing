@@ -15,6 +15,9 @@ class CameraImg:
         self.center_y_um = center_y_um
 
         self.resizeFactor, self.img_src = self.resizeToMaxDimensions(img_src, maxWidth, maxHeight)
+        self.cut_horizontal = np.zeros((280, self.img_src.shape[1], 3))
+        self.cut_vertical = np.zeros((280, self.img_src.shape[0], 3))
+
         self.img_dst = np.copy(self.img_src)
 
         # neni nutne - jeste nasleduce gaussian na img_gray
@@ -30,7 +33,7 @@ class CameraImg:
 
         th = maxVal - (maxVal/100.*self.treshold_proc)
         ret, self.img_calc = cv2.threshold(self.img_gray,th,maxVal,cv2.THRESH_TOZERO)
-        
+
         self.centroid_x_px = None
         self.centroid_y_px = None
         self.centroid_center_dist_x_px = 0
@@ -43,7 +46,7 @@ class CameraImg:
         self.beam_volume_px = 0
 
         self.line_width = 1
-        self.line_width_centroid_cut = 2
+        self.line_width_centroid_cut = 1
         self.font_size = 0.3
         self.font_line_width = 1
 
@@ -69,10 +72,10 @@ class CameraImg:
         self.img_dst = cv2.cvtColor(hsv.astype("uint8"),cv2.COLOR_HSV2BGR)
         if self.centroid_x_px is not None:
             # self.get_beam_size()
+            self.draw_measures()
             self.draw_centroid()
             self.draw_centroid_cut()
             # self.draw_beam_size()
-            self.draw_measures()
         else:
             cv2.putText(self.img_dst, "Centroid not found.", (10, 50),cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
@@ -146,10 +149,17 @@ class CameraImg:
     def draw_centroid_cut( self ):
         if self.centroid_x_px is None:
             return
+        
         h = self.img_src.shape[0]
         w = self.img_src.shape[1]
         lx = []
         ly = []
+
+        # nejrpve mrizka, pak signal
+        self.draw_measures_cut(self.cut_horizontal)
+        self.draw_measures_cut(self.cut_vertical)
+
+        # TO DO optimalizovat z cyklu
         for x in range(0,w):
             lx.append(self.img_gray[self.centroid_y_px][x])
         for y in range(0,h):
@@ -157,10 +167,14 @@ class CameraImg:
 
         for x in range(0,w-1):
             #self.img_dst[lx[x]][x] = (0,255,0)
-            cv2.line(self.img_dst, (x,h-lx[x]), (x+1,h-lx[x+1]), (0,255,255), self.line_width_centroid_cut) 
+            cv2.line(self.cut_horizontal, (x,self.cut_horizontal.shape[0]-lx[x]), (x+1,self.cut_horizontal.shape[0]-lx[x+1]), (255, 255, 255), self.line_width_centroid_cut) 
         for y in range(0,h-1):
             #self.img_dst[y][ly[y]] = (0,0,255 )
-            cv2.line(self.img_dst, (ly[y],y), (ly[y+1],y+1), (0,255,255), self.line_width_centroid_cut) 
+            cv2.line(self.cut_vertical, (y, self.cut_vertical.shape[0]-ly[y]), (y+1, self.cut_vertical.shape[0]-ly[y+1]), (255, 255, 255), self.line_width_centroid_cut) 
+
+        # cv2.imshow("v", self.cut_vertical)
+        # cv2.imshow("h", self.cut_horizontal)
+        # cv2.waitKey(100)
 
     def draw_beam_size( self ):
         if self.centroid_x_px is None:
@@ -176,8 +190,8 @@ class CameraImg:
         h = self.img_dst.shape[0]
         w = self.img_dst.shape[1]
 
-        zero_x = -1*int(self.center_x_um/(self.pixel_size/self.resizeFactor))
-        zero_y = -1*int(self.center_y_um/(self.pixel_size/self.resizeFactor))
+        zero_x = -1*round(self.center_x_um/(self.pixel_size/self.resizeFactor))
+        zero_y = -1*round(self.center_y_um/(self.pixel_size/self.resizeFactor))
 
         #cross
         #cv2.line(self.img_dst, (int(w/2)+zero_x,0), (int(w/2)+zero_x,h), (150,150,150), self.line_width) 
@@ -187,21 +201,27 @@ class CameraImg:
         cv2.line(self.img_dst, (int(w/2)+zero_x,int(h/2)+zero_y-cross_sz), (int(w/2)+zero_x,int(h/2)+zero_y+cross_sz), (255,255,255), self.line_width) 
         cv2.line(self.img_dst, (int(w/2)+zero_x-cross_sz,int(h/2)+zero_y), (int(w/2)+zero_x+cross_sz,int(h/2)+zero_y), (255,255,255), self.line_width) 
 
-        big_step = int(1000/(self.pixel_size/self.resizeFactor))
-        small_step = int(big_step / 10)
+        # nezaokrouhlovat! - zaokrouhlit az uvnitr pred vykreslenim
+        # ve for cyklu pokud se pouzije zaokrouhlene jako step, tak se vyscita chyba
+        big_step = 1000/(self.pixel_size/self.resizeFactor)
+        small_step = big_step / 10
 
         #label = ((int(self.centroid_x_px / big_step) + 1) * -1000)
         #start = (self.centroid_x_px % big_step) - big_step
         #label = ((int((w/2) / big_step) + 1) * -1000)
         #start = int(((w/2) % big_step) - big_step)
-        label = ((int(((w/2)+zero_x) / big_step) + 1) * -1000)
-        start = int((((w/2)+zero_x) % big_step) - big_step)
-        for x in range(start,w,big_step):
+        label = ((round(((w/2)+zero_x) / big_step) + 1) * -1000)
+        start = round((((w/2)+zero_x) % big_step) - big_step)
+        for i in np.arange(start,w,big_step):
+            x = round(i)
             cv2.line(self.img_dst, (x,w), (x,h-meas_big_line_size), (255,255,255), self.line_width) 
             txt_sz = cv2.getTextSize(str(label), cv2.FONT_HERSHEY_SIMPLEX, self.font_size, self.font_line_width)
             cv2.putText(self.img_dst, str(label), (int(x - txt_sz[0][0]/2), h - (meas_big_line_size + 5)),cv2.FONT_HERSHEY_SIMPLEX, self.font_size, (255, 255, 255), self.font_line_width)
             cnt = 0
-            for x2 in range(0,big_step,small_step):
+            # kratke carky - kazda pata vetsi
+            # zaokrouhlit az uvnitr cyklu po prenasobeni
+            for j in range(10):
+                x2 = round(j * small_step)
                 ln_len = meas_big_line_size if cnt == 5 else int(meas_big_line_size / 2)
                 cv2.line(self.img_dst, (x+x2,w), (x+x2,h-ln_len), (255,255,255), self.line_width) 
                 cnt += 1
@@ -212,19 +232,63 @@ class CameraImg:
         #label = (int((h/2) / big_step) + 1) * -1000
         #start = int(((h/2) % big_step) - big_step)
 
-        label = (int(((h/2)+zero_y) / big_step) + 1) * +1000
+        label = (int(((h/2)+zero_y) / big_step) + 1) * + 1000
         start = int((((h/2)+zero_y) % big_step) - big_step)
-        for y in range(start,h,big_step):
-            cv2.line(self.img_dst, (0,y), (20,y), (255,255,255), self.line_width) 
+        for i in np.arange(start,h,big_step):
+            y = round(i)
+            cv2.line(self.img_dst, (0,y), (meas_big_line_size,y), (255,255,255), self.line_width) 
             txt_sz = cv2.getTextSize(str(label), cv2.FONT_HERSHEY_SIMPLEX, self.font_size, self.font_line_width)
-            cv2.putText(self.img_dst, str(label), (30, int(y + txt_sz[0][1]/2)),cv2.FONT_HERSHEY_SIMPLEX, self.font_size, (255, 255, 255), self.font_line_width)
+            cv2.putText(self.img_dst, str(label), (meas_big_line_size+5, int(y + txt_sz[0][1]/2)),cv2.FONT_HERSHEY_SIMPLEX, self.font_size, (255, 255, 255), self.font_line_width)
             cnt = 0
-            for y2 in range(0,big_step,small_step):
-                ln_len =  20 if cnt == 5 else 10
+            # kratke carky - kazda pata vetsi
+            for j in range(10):
+                y2 = round(j * small_step)
+                ln_len = meas_big_line_size if cnt == 5 else int(meas_big_line_size / 2)
                 cv2.line(self.img_dst, (0,y+y2), (ln_len,y+y2), (255,255,255), self.line_width) 
                 cnt += 1
             label -= 1000
 
+    def draw_measures_cut(self, target):
+        if self.centroid_x_px is None:
+            return
+        
+        h = target.shape[0]
+        w = target.shape[1]
+
+        zero_x = -1*round(self.center_x_um/(self.pixel_size/self.resizeFactor))
+
+        # nezaokrouhlovat! - zaokrouhlit az uvnitr pred vykreslenim
+        # ve for cyklu pokud se pouzije zaokrouhlene jako step, tak se vyscita chyba
+        big_step = 1000/(self.pixel_size/self.resizeFactor)
+        small_step = big_step / 10
+
+        color = (90, 90, 90)
+        meas_big_line_size = 14
+
+        # horizontalne mikrony jako na obrazu
+        label = ((int(((w/2)+zero_x) / big_step) + 1) * - 1000)
+        start = round((((w/2)+zero_x) % big_step) - big_step)
+        for i in np.arange(start,w,big_step):
+            x = round(i)
+            cv2.line(target, (x,0), (x,h), color, self.line_width) 
+            txt_sz = cv2.getTextSize(str(label), cv2.FONT_HERSHEY_SIMPLEX, self.font_size, self.font_line_width)
+            cv2.putText(target, str(label), (x+3, h - txt_sz[0][1] - 5), cv2.FONT_HERSHEY_SIMPLEX, self.font_size, color, self.font_line_width)
+            # kratke carky - kazda pata vetsi
+            cnt = 0
+            for j in range(10):
+                x2 = round(j * small_step)
+                ln_len = meas_big_line_size if cnt == 5 else int(meas_big_line_size / 2)
+                cv2.line(target, (x+x2,w), (x+x2,h-ln_len), color, self.line_width) 
+                cnt += 1
+            label += 1000
+
+        # vertikalne intenzita svetla 
+        label = 50
+        start = 0
+        for y in range(start, 255, 50):
+            cv2.line(target, (0,h-y), (w,h-y), color, self.line_width) 
+            txt_sz = cv2.getTextSize(str(label), cv2.FONT_HERSHEY_SIMPLEX, self.font_size, self.font_line_width)
+            cv2.putText(target, str(y), (2, int(h - (y + txt_sz[0][1] + 2))), cv2.FONT_HERSHEY_SIMPLEX, self.font_size, color, self.font_line_width)
 
 
     def draw_info( self, print_info ):
@@ -236,7 +300,6 @@ class CameraImg:
         y = y_step
         for it in print_info:
             cv2.putText(self.img_dst, str(it[0]), (title_x, y),cv2.FONT_HERSHEY_SIMPLEX, self.font_size, it[2], self.font_line_width)
-            #cv2.putText(self.img_dst, str(":"), (val_x + 30, y),cv2.FONT_HERSHEY_SIMPLEX, self.font_size, (255, 255, 255), self.font_line_width)
             cv2.putText(self.img_dst, str(it[1]), (val_x, y),cv2.FONT_HERSHEY_SIMPLEX, self.font_size, it[2], self.font_line_width)
             y += y_step
 

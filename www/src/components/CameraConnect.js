@@ -82,9 +82,9 @@ export default function CameraConnect(props){
                 })}
             </select>
             &nbsp;
-            <button className="ui button" disabled={working} onClick={onStartStopClick}>
+            <button className="ui icon button" disabled={working} onClick={onStartStopClick}>
                 <i className={(capturing ? "stop icon" : "play icon")} />
-                {(capturing ? "Stop" : "Start")}
+                {/* {(capturing ? "Stop" : "Start")} */}
             </button>
         </div>
 }
