@@ -26,13 +26,12 @@ class CameraImg:
         self.img_gray = cv2.cvtColor(self.img_src, cv2.COLOR_BGR2GRAY)
         self.img_gray = cv2.GaussianBlur(self.img_gray, (25,25), 0)
 
-        (minVal, maxVal, minLoc, maxLoc) = cv2.minMaxLoc(self.img_gray)
-        print("maxVal:" + str(maxVal))
+        (_, self.maxVal, _, _) = cv2.minMaxLoc(self.img_gray)
         #print("maxLoc:" + str(maxLoc))
         #cv2.circle(self.img_gray, maxLoc, 5, (255, 0, 0), 2)
 
-        th = maxVal - (maxVal/100.*self.treshold_proc)
-        ret, self.img_calc = cv2.threshold(self.img_gray,th,maxVal,cv2.THRESH_TOZERO)
+        th = self.maxVal - (self.maxVal/100.*self.treshold_proc)
+        ret, self.img_calc = cv2.threshold(self.img_gray, th, self.maxVal, cv2.THRESH_TOZERO)
 
         self.centroid_x_px = None
         self.centroid_y_px = None
@@ -77,7 +76,7 @@ class CameraImg:
             self.draw_measures()
             self.draw_centroid()
             self.draw_centroid_cut()
-            self.calc_beam_size() #nakonec - zavisi na centroidu
+            self.calc_beam_size(lightLevel=self.maxVal/2) #nakonec - zavisi na centroidu!
             # self.draw_beam_size()
         else:
             cv2.putText(self.img_dst, "Centroid not found.", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
@@ -111,29 +110,29 @@ class CameraImg:
             self.centroid_center_dist_y_px = (h / 2) - self.centroid_y_px
 
 
-    def calc_beam_size( self ):
+    def calc_beam_size( self, lightLevel=128):
         w = self.img_gray.shape[1]
         h = self.img_gray.shape[0]
         bw = 0
         for i in range( self.centroid_x_px, 0, -1 ):
-            if self.img_gray[self.centroid_y_px][i] < 128:
+            if self.img_gray[self.centroid_y_px][i] < lightLevel:
                 break
             self.beam_width_left_px = i
             bw += 1
         for i in range( self.centroid_x_px, w, 1 ):
-            if self.img_gray[self.centroid_y_px][i] < 128:
+            if self.img_gray[self.centroid_y_px][i] < lightLevel:
                 break
             bw += 1
         self.beam_width_px = bw
 
         bh = 0
         for i in range( self.centroid_y_px, 0, -1 ):
-            if self.img_gray[i][self.centroid_x_px] < 128:
+            if self.img_gray[i][self.centroid_x_px] < lightLevel:
                 break
             self.beam_height_top_px = i
             bh += 1
         for i in range( self.centroid_y_px, h, 1 ):
-            if self.img_gray[i][self.centroid_x_px] < 128:
+            if self.img_gray[i][self.centroid_x_px] < lightLevel:
                 break
             bh += 1
         self.beam_height_px = bh

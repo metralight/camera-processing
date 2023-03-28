@@ -1,7 +1,12 @@
 
 
+
 # Camera processing
 
-Software for processing light centroid using GeICam cameras.
+Procesování paprsku světla (pozice a šířka paprsku) z GenICam kamery.
 
-Readout from selected camera using Harvesters package (Image Acquisition Library for GenICam-based Machine Vision System, https://github.com/genicam/harvesters).
+Nutné je instalace GenTL poskytovatele, ktery umí pracovat s kamerou. Nejlepší ke každé kameře vlastní SDK.
+
+Poté potřeba v cameraConfig přidat odkaz na cti soubor daného SDK.
+
+Více https://github.com/genicam/harvesters

@@ -1,7 +1,7 @@
 {
 	CAMERA:
 	{
-		ExposureTime: 5000
+		ExposureTime: 800
 		ExposureAuto: Off
 	}
 }

@@ -14,7 +14,7 @@ class AbortedException(Exception):
 
 class App():
     EXCEPTIONS_FUNC = str
-    VERSION = "0.2.0"
+    VERSION = "1.0.0"
     USER_CONFIG_FILE = "userSettings.hjson"
 
     def __init__(self, socketio : SocketIO, config, camera : HarvesterWrapper):

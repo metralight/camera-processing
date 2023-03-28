@@ -16,33 +16,21 @@ export default function MeasData(props){
     // 'beam_height_um' : self.pixToUm(self.beam_height_px),
     // 'beam_volume_px' : self.beam_volume_px,
     
-    return <div>
-        <h2>Measurement data</h2>
-        <table className="ui very compact celled table">
-            <thead>
-                <tr>
-                    <th className="eight wide">Param</th>
-                    <th className="eight wide">Value</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Centroid X [um]</td>
-                    <td>{data.centroid_center_dist_x_um}</td>
-                </tr>
-                <tr>
-                    <td>Centroid Y [um]</td>
-                    <td>{data.centroid_center_dist_y_um}</td>
-                </tr>
-                <tr>
-                    <td>Centroid width [um]</td>
-                    <td>{data.beam_width_um}</td>
-                </tr>
-                <tr>
-                    <td>Centroid height [um]</td>
-                    <td>{data.beam_height_um}</td>
-                </tr>
-            </tbody>
-        </table>
+    return <div style={{marginTop: "30px"}}>
+        <h2>Beam X</h2>
+        <h1 style={{fontSize:"55px", marginTop: "0.3em"}}>{data.centroid_center_dist_x_um}&nbsp;&micro;m</h1>
+        
+        <h2>Beam Y</h2>
+        <h1 style={{fontSize:"55px", marginTop: "0.3em"}}>{data.centroid_center_dist_y_um}&nbsp;&micro;m</h1>
+
+    
+        <h2>Beam width</h2>
+        <h1 style={{fontSize:"55px", marginTop: "0.3em"}}>{data.beam_width_um}&nbsp;&micro;m</h1>
+
+    
+        <h2>Beam height</h2>
+        <h1 style={{fontSize:"55px", marginTop: "0.3em"}}>{data.beam_height_um}&nbsp;&micro;m</h1>
+
+        
     </div>
 }
