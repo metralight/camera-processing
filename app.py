@@ -14,10 +14,8 @@ class AbortedException(Exception):
 
 class App():
     EXCEPTIONS_FUNC = str
-    VERSION = "0.1.0"
+    VERSION = "0.2.0"
     USER_CONFIG_FILE = "userSettings.hjson"
-
-    captureDeviceName = ""
 
     def __init__(self, socketio : SocketIO, config, camera : HarvesterWrapper):
         super().__init__()
@@ -26,8 +24,17 @@ class App():
         self.camera : HarvesterWrapper = camera
         self.config = config
         self.currImage : CameraImg = None
+
+        # aktualne spustena kamera
+        self.captureDeviceName = ""
+
+        # aktualni devices a nodes kamery
+        self.currDevices = []
+        self.currNodes = []
+
         with open(self.USER_CONFIG_FILE, "r") as f:
             self.userConfig = hjson.load(f)
+
 
     def getCutImage(self, type):
         while True:
@@ -78,6 +85,31 @@ class App():
         with open(self.USER_CONFIG_FILE, "w") as f:
             f.write(hjson.dumps(self.userConfig, indent="\t"))
 
+    def getInitState(self, unused):
+        capturing = self.camera.isCapturing()
+        if capturing:
+            data = {
+                "capturing" : True,
+                "devices" : self.currDevices,
+                "nodes" : self.currNodes,
+            }
+        else:
+            self.currDevices = self.camera.getDevices()
+            data = {
+                "capturing" : False,
+                "devices" : self.currDevices,
+                "nodes" : [],
+            }
+        try:
+            return {
+                "result" : True,
+                "data" : data
+            }
+        except Exception as e:
+            logging.exception(e)
+            return {"result" : False, "data" : self._formatException(e)}
+        
+    
     def getConfig(self, unused):
         try:
             return {
@@ -90,9 +122,10 @@ class App():
         
     def getDevices(self, unused):
         try:
+            self.currDevices = self.camera.getDevices()
             return {
                 "result" : True,
-                "data" : self.camera.getDevices()
+                "data" : self.currDevices
             }
         except Exception as e:
             logging.exception(e)
@@ -117,10 +150,10 @@ class App():
         self._saveUserConfig()
 
         try:
-            nodes = self.camera.updateNode(node["name"], value)
+            self.currNodes = self.camera.updateNode(node["name"], value)
             return {
                 "result" : True,
-                "data" : nodes
+                "data" : self.currNodes
             }
         except Exception as e:
             logging.exception(e)
@@ -128,11 +161,11 @@ class App():
                     
     def startCapture(self, device):
         try:
-            nodes = self.camera.startGrab(device, self.userConfig["CAMERA"])
+            self.currNodes = self.camera.startGrab(device, self.userConfig["CAMERA"])
             self.captureDeviceName = device["model"]
             return {
                 "result" : True,
-                "data" : nodes
+                "data" : self.currNodes
             }
         except Exception as e:
             logging.exception(e)
@@ -141,6 +174,7 @@ class App():
     def stopCapture(self, unused):
         try:
             self.camera.stopGrab()
+            self.currNodes = []
             return {
                 "result" : True,
                 "data" : None

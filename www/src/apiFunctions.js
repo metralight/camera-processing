@@ -47,3 +47,7 @@ export async function getConfig (socket){
 export async function getMeasData (socket){
     return actionCreator(socket, "GET_MEAS_DATA")
 }
+
+export async function getInitState (socket){
+    return actionCreator(socket, "GET_INIT_STATE")
+}

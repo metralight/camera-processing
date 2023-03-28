@@ -80,7 +80,7 @@ class CameraImg:
             self.calc_beam_size() #nakonec - zavisi na centroidu
             # self.draw_beam_size()
         else:
-            cv2.putText(self.img_dst, "Centroid not found.", (10, 50),cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            cv2.putText(self.img_dst, "Centroid not found.", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
     def get_calculated_data(self):
         return {
@@ -88,12 +88,12 @@ class CameraImg:
             'centroid_y_px' : self.centroid_y_px if self.centroid_y_px is not None else 0,
             'centroid_center_dist_x_px' : self.centroid_center_dist_x_px,
             'centroid_center_dist_y_px' : self.centroid_center_dist_y_px,
-            'centroid_center_dist_x_um'  : round(self.pixToUm(self.centroid_center_dist_x_px)-self.center_x_um, 2),
-            'centroid_center_dist_y_um'  : round(self.pixToUm(self.centroid_center_dist_y_px)-self.center_y_um, 2),
+            'centroid_center_dist_x_um'  : round(self.pixToUm(self.centroid_center_dist_x_px)-self.center_x_um),
+            'centroid_center_dist_y_um'  : round(self.pixToUm(self.centroid_center_dist_y_px)-self.center_y_um),
             'beam_width_px' : self.beam_width_px,
             'beam_height_px' : self.beam_height_px,
-            'beam_width_um' : self.pixToUm(self.beam_width_px),
-            'beam_height_um' : self.pixToUm(self.beam_height_px),
+            'beam_width_um' : round(self.pixToUm(self.beam_width_px)),
+            'beam_height_um' : round(self.pixToUm(self.beam_height_px)),
             'beam_volume_px' : self.beam_volume_px,
         }
 

@@ -11,6 +11,13 @@ from harvesters.util.pfnc import mono_location_formats, \
     rgb_formats, bgr_formats, \
     rgba_formats, bgra_formats, bayer_location_formats
 
+ACCESS_STATUSES = {
+    0 : "UNKN",
+    1 : "READY",
+    2 : "READ_ONLY",
+    3 : "UNREACHABLE",
+    4 : "BUSY",
+}
 class HarvesterWrapper(AsyncIOEventEmitter):
     config = None
 
@@ -39,11 +46,13 @@ class HarvesterWrapper(AsyncIOEventEmitter):
         for dev in self.harvester.device_info_list:
             logging.info(dev)
 
-        
-
+    
         # find required model or serial_number
         # model STC_CMC4MPOE
         # serial 15D2184
+
+    def isCapturing(self):
+        return self.ia is not None and self.ia.is_acquiring()
 
     def getDevices(self):
         self.harvester.update()
@@ -53,7 +62,7 @@ class HarvesterWrapper(AsyncIOEventEmitter):
                 "model" : dev.model,
                 "serial_number" : dev.serial_number,
                 "display_name" : dev.display_name,
-                "access_status" : dev.access_status,
+                "access_status" : ACCESS_STATUSES[dev.access_status],
                 "vendor" : dev.vendor,
             })
         return res
@@ -98,7 +107,7 @@ class HarvesterWrapper(AsyncIOEventEmitter):
         
         self.grabStoppedEvent.clear()
         try:
-            self.ia = self.harvester.create(deviceInfo)
+            self.ia = self.harvester.create({"model" : deviceInfo["model"], "serial_number" :  deviceInfo["serial_number"]})
         except Exception as e:
             raise Exception("Can not access camera defined by identifier")
 

@@ -61,7 +61,7 @@ export default function VideoControlNode(props){
                 >
                     {
                         node.options.map(option => {
-                            return <option value={option.numeric_value}>
+                            return <option value={option.numeric_value} key={option.display_name}>
                                 {option.display_name}
                             </option>
                         })

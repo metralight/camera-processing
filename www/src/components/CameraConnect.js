@@ -76,8 +76,8 @@ export default function CameraConnect(props){
                 ref={dropdownEl}
             >
                 {(devices ? devices : []).map((dev) => {
-                    return <option value={dev.model} key={dev.model}>
-                        {dev.model}
+                    return <option value={dev.model} key={dev.model} disabled={dev.access_status !== "READY"}>
+                        {dev.model} [{dev.access_status}]
                     </option>
                 })}
             </select>

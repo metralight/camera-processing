@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react"
 import Loader from "./Loader"
 import { io } from "socket.io-client"
-import { startCapture, stopCapture, getDevices, getConfig, updateNode, getMeasData } from "../apiFunctions"
+import { startCapture, stopCapture, getDevices, getConfig, updateNode, getMeasData, getInitState } from "../apiFunctions"
 import Video from "./Video"
 import VideoControls from "./VideoControls"
 import ErrorBoundary from "./ErrorBoundary"
@@ -28,19 +28,24 @@ export default function App(props){
     }, [capturing])
 
     useEffect(() => {
-        getDevices(socket).then((devices) => {
-            setDevices(devices)
-        }).catch((data) => {
-            console.error(data)
-            alertify.error("Error while getting devies list")
-        }) 
-
         getConfig(socket).then((config) => {
             setConfig(config)
         }).catch((data) => {
             console.error(data)
             alertify.error("Error while getting config")
         })  
+
+        getInitState(socket).then((state) => {
+            setCapturing(state.capturing)
+            setDevices(state.devices)
+            if (state.capturing){
+                setControlNodes(state.nodes)
+                getMeasuringDataStream()
+            }
+        }).catch((data) => {
+            console.error(data)
+            alertify.error("Error while getting app state")
+        })        
         
     }, [])
 

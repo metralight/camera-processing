@@ -1,6 +1,7 @@
 from flask import Flask, render_template, Response
 from flask_socketio import SocketIO
-from engineio.async_drivers import gevent #kvuli pyinstalleru
+from engineio.async_drivers import threading #kvuli pyinstalleru
+
 import hjson
 import logging
 import os
@@ -24,8 +25,9 @@ cam = HarvesterWrapper(configCamera)
 # static folder pres cwd jinak nefunguje zapakovane do exe
 flaskApp = Flask(__name__, static_folder=os.getcwd() + "/www/public", static_url_path="")
 flaskApp.config['SECRET_KEY'] = 'manufacturingCameraReader'
-#bez asyncmode nejde zaroven streaming
+#bez async_mode="threading" nejde zaroven streaming
 #viz Limitations of Streaming: https://blog.miguelgrinberg.com/post/video-streaming-with-flask
+#aby fungovaly v socket io websockety, musi byt nainstalovane simple-websocket
 socketio = SocketIO(flaskApp, ping_timeout=60, logger=True, async_mode="threading") 
 
 app = App(socketio, config, cam)
@@ -53,6 +55,7 @@ def handlerError(e):
 
 socketio.on_event("GET_CONFIG",  app.getConfig)
 socketio.on_event("GET_DEVICES",  app.getDevices)
+socketio.on_event("GET_INIT_STATE",  app.getInitState)
 socketio.on_event("START_CAPTURE",  app.startCapture)
 socketio.on_event("STOP_CAPTURE",  app.stopCapture)
 socketio.on_event("UPDATE_NODE",  app.updateNode)
@@ -66,7 +69,6 @@ def test_connect(auth):
 @socketio.on('disconnect')
 def test_disconnect():
     logging.info("Disonnected")
-
 
 
 if __name__ == '__main__':
