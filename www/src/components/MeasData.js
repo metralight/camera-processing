@@ -17,18 +17,18 @@ export default function MeasData(props){
     // 'beam_volume_px' : self.beam_volume_px,
     
     return <div style={{marginTop: "30px"}}>
-        <h2>Beam X</h2>
+        <h2>Position X</h2>
         <h1 style={{fontSize:"55px", marginTop: "0.3em"}}>{data.centroid_center_dist_x_um}&nbsp;&micro;m</h1>
         
-        <h2>Beam Y</h2>
+        <h2>Position Y</h2>
         <h1 style={{fontSize:"55px", marginTop: "0.3em"}}>{data.centroid_center_dist_y_um}&nbsp;&micro;m</h1>
 
     
-        <h2>Beam width</h2>
+        <h2>Width X</h2>
         <h1 style={{fontSize:"55px", marginTop: "0.3em"}}>{data.beam_width_um}&nbsp;&micro;m</h1>
 
     
-        <h2>Beam height</h2>
+        <h2>Width Y</h2>
         <h1 style={{fontSize:"55px", marginTop: "0.3em"}}>{data.beam_height_um}&nbsp;&micro;m</h1>
 
         

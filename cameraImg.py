@@ -23,16 +23,17 @@ class CameraImg:
         # neni nutne - jeste nasleduce gaussian na img_gray
         # self.img_src = cv2.medianBlur(self.img_src, 5)
 
-        self.img_gray = cv2.cvtColor(self.img_src, cv2.COLOR_BGR2GRAY)
-        self.img_gray = cv2.GaussianBlur(self.img_gray, (25,25), 0)
+        self.img_gray_orig = cv2.cvtColor(self.img_src, cv2.COLOR_BGR2GRAY)
+        self.img_gray_proc = cv2.GaussianBlur(self.img_gray_orig, (25,25), 0)
 
-        (_, self.maxVal, _, _) = cv2.minMaxLoc(self.img_gray)
+        (_, self.maxVal, _, _) = cv2.minMaxLoc(self.img_gray_proc)
         #print("maxLoc:" + str(maxLoc))
         #cv2.circle(self.img_gray, maxLoc, 5, (255, 0, 0), 2)
 
         th = self.maxVal - (self.maxVal/100.*self.treshold_proc)
-        ret, self.img_calc = cv2.threshold(self.img_gray, th, self.maxVal, cv2.THRESH_TOZERO)
+        ret, self.img_calc = cv2.threshold(self.img_gray_proc, th, self.maxVal, cv2.THRESH_TOZERO)
 
+        # priprava promennych na vypocty
         self.centroid_x_px = None
         self.centroid_y_px = None
         self.centroid_center_dist_x_px = 0
@@ -49,6 +50,27 @@ class CameraImg:
         self.font_size = 0.3
         self.font_line_width = 1
 
+        # vypocet centoridu
+        self.get_centroid_pos()
+        
+        # priprava image pro zobrazeni
+        w = self.img_src.shape[0]
+        h = self.img_src.shape[1]
+        hsv = np.full((w,h,3),255,"uint16")
+        hsv[:,:,0] = ((255-self.img_gray_orig.astype("uint16"))*160/256+150)%180
+        hsv[:,:,2] = np.sqrt(self.img_gray_orig.astype("uint16"))*16
+        self.img_dst = cv2.cvtColor(hsv.astype("uint8"),cv2.COLOR_HSV2BGR)
+
+        # beam size + kresleni
+        if self.centroid_x_px is not None:
+            self.calc_beam_size(lightLevel=self.maxVal/2) #zavisi na centroidu!
+            self.draw_measures()
+            self.draw_centroid()
+            self.draw_centroid_cut()
+            # self.draw_beam_size()
+        else:
+            cv2.putText(self.img_dst, "Centroid not found.", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+
     def resizeToMaxDimensions(self, image, maxWidth, maxHeight):
         f1 = maxWidth / image.shape[1]
         f2 = maxHeight / image.shape[0]
@@ -60,26 +82,6 @@ class CameraImg:
     def pixToUm(self, pixVal):
         return pixVal * (self.pixel_size / self.resizeFactor)
     
-    def process( self ):
-        self.get_centroid_pos()
-        #self.img_gray[self.img_gray<50] = 0
-        #self.img_gray[self.img_gray>=50] -= 50
-        #cv2.normalize(self.img_gray,self.img_gray,0,255,cv2.NORM_MINMAX)
-        ##hsv = np.full((1200,1920,3),255,"uint16")
-        w = self.img_src.shape[0]
-        h = self.img_src.shape[1]
-        hsv = np.full((w,h,3),255,"uint16")
-        hsv[:,:,0] = ((255-self.img_gray.astype("uint16"))*160/256+150)%180
-        hsv[:,:,2] = np.sqrt(self.img_gray.astype("uint16"))*16
-        self.img_dst = cv2.cvtColor(hsv.astype("uint8"),cv2.COLOR_HSV2BGR)
-        if self.centroid_x_px is not None:
-            self.draw_measures()
-            self.draw_centroid()
-            self.draw_centroid_cut()
-            self.calc_beam_size(lightLevel=self.maxVal/2) #nakonec - zavisi na centroidu!
-            # self.draw_beam_size()
-        else:
-            cv2.putText(self.img_dst, "Centroid not found.", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
     def get_calculated_data(self):
         return {
@@ -111,31 +113,39 @@ class CameraImg:
 
 
     def calc_beam_size( self, lightLevel=128):
-        w = self.img_gray.shape[1]
-        h = self.img_gray.shape[0]
+        w = self.img_gray_proc.shape[1]
+        h = self.img_gray_proc.shape[0]
         bw = 0
+        bwValidMin = False
+        bwValidMax = False
         for i in range( self.centroid_x_px, 0, -1 ):
-            if self.img_gray[self.centroid_y_px][i] < lightLevel:
+            if self.img_gray_proc[self.centroid_y_px][i] < lightLevel:
+                bwValidMin = True
                 break
             self.beam_width_left_px = i
             bw += 1
         for i in range( self.centroid_x_px, w, 1 ):
-            if self.img_gray[self.centroid_y_px][i] < lightLevel:
+            if self.img_gray_proc[self.centroid_y_px][i] < lightLevel:
+                bwValidMax = True
                 break
             bw += 1
-        self.beam_width_px = bw
+        self.beam_width_px = bw if (bwValidMin and bwValidMax) else 0
 
         bh = 0
+        bhValidMin = False
+        bhValidMax = False
         for i in range( self.centroid_y_px, 0, -1 ):
-            if self.img_gray[i][self.centroid_x_px] < lightLevel:
+            if self.img_gray_proc[i][self.centroid_x_px] < lightLevel:
+                bhValidMin = True
                 break
             self.beam_height_top_px = i
             bh += 1
         for i in range( self.centroid_y_px, h, 1 ):
-            if self.img_gray[i][self.centroid_x_px] < lightLevel:
+            if self.img_gray_proc[i][self.centroid_x_px] < lightLevel:
+                bhValidMax = True
                 break
             bh += 1
-        self.beam_height_px = bh
+        self.beam_height_px = bh if (bhValidMin and bhValidMax) else 0
 
         x1 = self.beam_width_left_px
         x2 = self.beam_width_left_px + self.beam_width_px
@@ -162,15 +172,15 @@ class CameraImg:
         lx = []
         ly = []
 
-        # nejrpve mrizka, pak signal
+        # nejprve mrizka, pak signal
         self.draw_measures_cut(self.cut_horizontal)
         self.draw_measures_cut(self.cut_vertical)
 
         # TO DO optimalizovat z cyklu
         for x in range(0,w):
-            lx.append(self.img_gray[self.centroid_y_px][x])
+            lx.append(self.img_gray_proc[self.centroid_y_px][x])
         for y in range(0,h):
-            ly.append(self.img_gray[y][self.centroid_x_px])
+            ly.append(self.img_gray_proc[y][self.centroid_x_px])
 
         for x in range(0,w-1):
             #self.img_dst[lx[x]][x] = (0,255,0)
@@ -314,7 +324,7 @@ class CameraImg:
         cv2.putText(self.img_dst, str(txt), (20, 10),cv2.FONT_HERSHEY_SIMPLEX, 0.4, col, 1)
 
     def get_graph_surface_data( self ):
-            small = cv2.resize(self.img_gray, (60, 60)) 
+            small = cv2.resize(self.img_gray_proc, (60, 60)) 
             h = small.shape[0]
             w = small.shape[1]
             out = []
@@ -334,7 +344,6 @@ if __name__ == "__main__":
     ci = CameraImg( img, 5.86, 15, -200, -200 )
     #cv2.imshow("Image", img_resize(img,0.3))
     #cv2.waitKey(0)
-    ret = ci.process()
     calc_data = ci.get_calculated_data()
     print("calc_data:" + str(calc_data))
 
@@ -345,7 +354,7 @@ if __name__ == "__main__":
     cv2.waitKey(0)
     #cv2.imshow("Image", img_resize(ci.img_src,zoom))
     #cv2.waitKey(0)
-    cv2.imshow("Image", img_resize(ci.img_gray,zoom))
+    cv2.imshow("Image", img_resize(ci.img_gray_proc,zoom))
     cv2.waitKey(0)
     cv2.imshow("Image", img_resize(ci.img_dst,zoom))
     cv2.waitKey(0)

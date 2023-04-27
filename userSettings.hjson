@@ -1,7 +1,9 @@
 {
 	CAMERA:
 	{
-		ExposureTime: 800
+		ExposureTime: 100
 		ExposureAuto: Off
+		Gain: 0
+		GainAuto: Off
 	}
 }

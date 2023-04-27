@@ -14,7 +14,7 @@ class AbortedException(Exception):
 
 class App():
     EXCEPTIONS_FUNC = str
-    VERSION = "1.0.0"
+    VERSION = "1.1.0"
     USER_CONFIG_FILE = "userSettings.hjson"
 
     def __init__(self, socketio : SocketIO, config, camera : HarvesterWrapper):
@@ -55,15 +55,13 @@ class App():
             image = self.camera.getImage()
             imageBytes = b""
             if image is not None:
-                newImg = CameraImg(
+                self.currImage = CameraImg(
                     image,
                     self.config["PIXEL_SIZE"][self.captureDeviceName],
                     self.config["PROCESSING"]["THRESHOLD_PERC"],
                     self.config['IMAGE_MAX_W'],
                     self.config['IMAGE_MAX_H']
                 )
-                newImg.process()
-                self.currImage = newImg
                 imgEnc = cv2.imencode("."+self.config["IMAGE_COMPRESSION"], self.currImage.img_dst)
                 if imgEnc[0]:
                     imageBytes = imgEnc[1].tobytes()
